@@ -127,7 +127,7 @@ IPT="/sbin/iptables"
 ######---------------------------------------------------------------------------------
 echo "Setting Network Cards"
 NETIF_0="enp1s0"
-NETIF_1=""
+NETIF_1="eth2"  # Updated to use eth2 as requested
 
 ######---------------------------
 echo "Setting your DNS servers can use cat /etc/resolv.conf"
@@ -179,11 +179,11 @@ $IPT -A OUTPUT -p icmp -o $NETIF_0 --icmp-type echo-reply -j ACCEPT
 echo "Allow DNS IPADDR"
 for dnsip in $DNS_SERVER
 do
-	echo "Allowing DNS lookups (tcp, udp port 53) to server '$dnsip'"
-	$IPT -A OUTPUT -p udp -o $NETIF_0 -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
-	$IPT -A INPUT  -p udp -i $NETIF_0 -s $dnsip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
-	$IPT -A OUTPUT -p tcp -o $NETIF_0 -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
-	$IPT -A INPUT  -p tcp -i $NETIF_0 -s $dnsip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
+    echo "Allowing DNS lookups (tcp, udp port 53) to server '$dnsip'"
+    $IPT -A OUTPUT -p udp -o $NETIF_0 -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p udp -i $NETIF_0 -s $dnsip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
+    $IPT -A OUTPUT -p tcp -o $NETIF_0 -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p tcp -i $NETIF_0 -s $dnsip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
 done
 
 ######---------------------------
@@ -206,12 +206,15 @@ $IPT -A OUTPUT -p UDP -o $NETIF_0 --dport 67:68 -j ACCEPT #DHCP
 
 ######---------------------------
 echo "Prevent DoS attack"
+# Implementing SYN flood protection
+$IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 5 -j ACCEPT
+$IPT -A INPUT -p tcp --syn -j DROP # Drop excess SYN packets to prevent DoS attacks
 
 ######---------------------------
 echo "Set up logging for incoming traffic."
 $IPT -N LOGNDROP
 $IPT -A INPUT -j LOGNDROP
-$IPT -A LOGNDROP -j LOG
+$IPT -A LOGNDROP -m limit --limit 5/min -j LOG
 $IPT -A LOGNDROP -j DROP
 
 ######---------------------------
