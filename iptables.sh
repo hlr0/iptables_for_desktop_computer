@@ -162,6 +162,8 @@ echo "Creating default policies"
 $IPT -P INPUT DROP
 $IPT -P OUTPUT DROP
 $IPT -P FORWARD DROP
+$IPT -P PREROUTING DROP
+$IPT -P POSTROUTING DROP
 
 ######---------------------------
 echo "Allow traffic on loopback"
