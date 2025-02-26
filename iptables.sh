@@ -152,12 +152,12 @@ $IPT -A INPUT -i lo -j ACCEPT
 $IPT -A OUTPUT -o lo -j ACCEPT
 
 echo "Ping from inside to outside"
-$IPT -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
-$IPT -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+$IPT -A OUTPUT -p icmp -i $NETIF_0 --icmp-type echo-request -j ACCEPT
+$IPT -A INPUT -p icmp -o $NETIF_0 --icmp-type echo-reply -j ACCEPT
 
 echo "Ping from outside to inside"
-$IPT -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
-$IPT -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+$IPT -A INPUT -p icmp -i $NETIF_0 --icmp-type echo-request -j ACCEPT
+$IPT -A OUTPUT -p icmp -o $NETIF_0 --icmp-type echo-reply -j ACCEPT
 
 #echo "Allow outbound DNS"
 #$IPT -A OUTPUT -p udp -o $NETIF_0 --dport 53 -j ACCEPT
@@ -178,14 +178,14 @@ $IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 $IPT -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 echo "Allow outbound connections on the ports we previously decided."
-$IPT -A OUTPUT -p tcp --dport 53 -j ACCEPT #DNS
-$IPT -A OUTPUT -p udp --dport 53 -j ACCEPT #DNS
-$IPT -A OUTPUT -p tcp --dport 80 -j ACCEPT #HTTP
-$IPT -A OUTPUT -p tcp --dport 443 -j ACCEPT #HTTPS
-$IPT -A OUTPUT -p UDP --dport 67:68 -j ACCEPT #DHCP
+$IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 53 -j ACCEPT #DNS
+$IPT -A OUTPUT -p udp -o $NETIF_0 --dport 53 -j ACCEPT #DNS
+$IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 80 -j ACCEPT #HTTP
+$IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 443 -j ACCEPT #HTTPS
+$IPT -A OUTPUT -p UDP -o $NETIF_0 --dport 67:68 -j ACCEPT #DHCP
 
 echo "Prevent DoS attack"
-$IPT -A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
+$IPT -A INPUT -p tcp -i $NETIF_0 --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
 
 echo "Set up logging for incoming traffic."
 $IPT -N LOGNDROP
