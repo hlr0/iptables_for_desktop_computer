@@ -5,7 +5,7 @@ IPT="/sbin/iptables"
 SERVER_IP="$(ip addr show eth0 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
 
 # Your DNS servers you use: cat /etc/resolv.conf
-DNS_SERVER="8.8.4.4 8.8.8.8"
+DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
 
 # Allow connections to this package servers
 PACKAGE_SERVER="ftp.us.debian.org security.debian.org"
