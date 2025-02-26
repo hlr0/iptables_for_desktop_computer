@@ -123,16 +123,15 @@ echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 #!/bin/bash
 IPT="/sbin/iptables"
 
-# Server IP
-SERVER_IP="$(ip addr show enp1s0 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
-
 #Network Cards
-NETIF_0=""
+NETIF_0="enp1s0"
 NETIF_1=""
 
-# Your DNS servers you use: cat /etc/resolv.conf
+echo "Setting your DNS servers can use cat /etc/resolv.conf"
 DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
 
+echo "Getting Server IP"
+SERVER_IP_0="$(ip addr show $NETIF_0 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
 
 echo "Flush all existing chains"
 $IPT -F
