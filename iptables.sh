@@ -123,7 +123,7 @@ echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 #!/bin/bash
 IPT="/sbin/iptables"
 
-#Network Cards
+echo "Setting Network Cards"
 NETIF_0="enp1s0"
 NETIF_1=""
 
