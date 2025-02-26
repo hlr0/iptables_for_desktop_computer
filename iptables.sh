@@ -141,13 +141,15 @@ SERVER_IP_1="$(ip addr show $NETIF_1 | grep 'inet ' | cut -f2 | awk '{ print $2}
 ######---------------------------------------------------------------------------------
 ######-----/// START OF SCRIPT FOR IPTABLES
 ######---------------------------------------------------------------------------------
-echo "Flush all existing chains"
+echo "Flush all existing tables"
 $IPT -F
 $IPT -X
-$IPT -t nat -F
-$IPT -t nat -X
+$IPT -t filter -F
+$IPT -t filter -X
 $IPT -t mangle -F
 $IPT -t mangle -X
+$IPT -t nat -F
+$IPT -t nat -X
 $IPT -t raw -F
 $IPT -t raw -X
 $IPT -t security -F
