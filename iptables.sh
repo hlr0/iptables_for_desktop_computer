@@ -19,9 +19,11 @@ $IPT -t mangle -F
 $IPT -t mangle -X
 
 echo "Set default policy to 'DROP'"
-$IPT -P INPUT   DROP
+$IPT -P INPUT DROP
 $IPT -P FORWARD DROP
-$IPT -P OUTPUT  DROP
+$IPT -P OUTPUT DROP
+$IPT -P PREROUTING DROP
+$IPT -P POSTROUTING DROP
 
 ## This should be one of the first rules.
 ## so dns lookups are already allowed for your other rules
