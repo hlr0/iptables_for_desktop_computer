@@ -123,6 +123,17 @@ echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 #!/bin/bash
 IPT="/sbin/iptables"
 
+# Server IP
+SERVER_IP="$(ip addr show enp1s0 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
+
+#Network Cards
+NETIF_0=""
+NETIF_1=""
+
+# Your DNS servers you use: cat /etc/resolv.conf
+DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
+
+
 echo "Flush all existing chains"
 $IPT -F
 $IPT -X
@@ -148,13 +159,23 @@ echo "Ping from outside to inside"
 $IPT -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 $IPT -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
 
+#echo "Allow outbound DNS"
+#$IPT -A OUTPUT -p udp -o $NETIF_0 --dport 53 -j ACCEPT
+#$IPT -A INPUT -p udp -i $NETIF_0 --sport 53 -j ACCEPT
+
+echo "Allow DNS IPADDR"
+for dnsip in $DNS_SERVER
+do
+	echo "Allowing DNS lookups (tcp, udp port 53) to server '$dnsip'"
+	$IPT -A OUTPUT -p udp -o $NETIF_0 -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+	$IPT -A INPUT  -p udp -i $NETIF_0 -s $dnsip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
+	$IPT -A OUTPUT -p tcp -o $NETIF_0 -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+	$IPT -A INPUT  -p tcp -i $NETIF_0 -s $dnsip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
+done
+
 echo "Allow previously established connections to continue uninterupted"
 $IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 $IPT -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
-echo "Allow outbound DNS"
-$IPT -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
-$IPT -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
 
 echo "Allow outbound connections on the ports we previously decided."
 $IPT -A OUTPUT -p tcp --dport 53 -j ACCEPT #DNS
