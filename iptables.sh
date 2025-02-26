@@ -220,12 +220,24 @@ echo "Prevent DoS attack"
 $IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 5 -j ACCEPT
 $IPT -A INPUT -p tcp --syn -j DROP # Drop excess SYN packets to prevent DoS attacks
 
+
+
 ######---------------------------
-echo "Set up logging for incoming traffic."
+echo "Set up logging for incoming and outgoing traffic."
+# Create a custom chain for logging and dropping
 $IPT -N LOGNDROP
+# Add rules to log incoming traffic before dropping it
 $IPT -A INPUT -j LOGNDROP
 $IPT -A LOGNDROP -m limit --limit 5/min -j LOG
 $IPT -A LOGNDROP -j DROP
+# Log incoming traffic before dropping
+$IPT -A INPUT -j LOG -m limit --limit 12/min --log-level 4 --log-prefix 'IP INPUT drop: '
+$IPT -A INPUT -j DROP
+# Log outgoing traffic before dropping
+$IPT -A OUTPUT -j LOG -m limit --limit 12/min --log-level 4 --log-prefix 'IP OUTPUT drop: '
+$IPT -A OUTPUT -j DROP
+
+
 
 ######---------------------------
 #echo "Block a specific ip-address"
