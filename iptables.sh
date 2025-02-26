@@ -126,8 +126,8 @@ IPT="/sbin/iptables"
 ######-----/// SETTINGS OF SYSTEM
 ######---------------------------------------------------------------------------------
 echo "Setting Network Cards"
-NETIF_0="enp1s0"
-NETIF_1="eth2"  # Updated to use eth2 as requested
+NETIF_0="enp1s0"  	# Update to use your second network card
+NETIF_1="enp1s1"  	# Update to use your second network card
 
 ######---------------------------
 echo "Setting your DNS servers can use cat /etc/resolv.conf"
