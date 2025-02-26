@@ -2,7 +2,7 @@
 IPT="/sbin/iptables"
 
 # Server IP
-SERVER_IP="$(ip addr show eth0 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
+SERVER_IP="$(ip addr show enp1s0 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
 
 # Your DNS servers you use: cat /etc/resolv.conf
 DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
