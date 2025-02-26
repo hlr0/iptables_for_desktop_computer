@@ -148,6 +148,10 @@ $IPT -t nat -F
 $IPT -t nat -X
 $IPT -t mangle -F
 $IPT -t mangle -X
+$IPT -t raw -F
+$IPT -t raw -X
+$IPT -t security -F
+$IPT -t security -X
 
 ######---------------------------
 echo "Creating default policies"
