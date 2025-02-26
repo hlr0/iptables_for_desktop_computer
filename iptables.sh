@@ -84,6 +84,20 @@ exit 0
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Setting up default kernel tunings here (don't worry too much about these right now, they are acceptable defaults) #DROP ICMP echo-requests sent to broadcast/multi-cast addresses.
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 #DROP source routed packets
@@ -122,21 +136,31 @@ echo "Allow traffic on loopback"
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 
+echo "Ping from inside to outside"
+iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+echo "Ping from outside to inside"
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
 echo "Allow previously established connections to continue uninterupted"
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
+echo "Allow outbound DNS"
+iptables -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
+iptables -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
+
 echo "Allow outbound connections on the ports we previously decided."
-iptables -A OUTPUT -p tcp --dport 25 -j ACCEPT #SMTP
 iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT #DNS
-iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT #HTTP
-iptables -A OUTPUT -p tcp --dport 110 -j ACCEPT #POP
-iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT #HTTPS
-iptables -A OUTPUT -p tcp --dport 51413 -j ACCEPT #BT
-iptables -A OUTPUT -p tcp --dport 6969 -j ACCEPT #BT tracker
-iptables -A OUTPUT -p UDP --dport 67:68 -j ACCEPT #DHCP
 iptables -A OUTPUT -p udp --dport 53 -j ACCEPT #DNS
-iptables -A OUTPUT -p udp --dport 51413 -j ACCEPT #BT
+iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT #HTTP
+iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT #HTTPS
+iptables -A OUTPUT -p UDP --dport 67:68 -j ACCEPT #DHCP
+
+echo "Prevent DoS attack"
+iptables -A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
 
 echo "Set up logging for incoming traffic."
 iptables -N LOGNDROP
