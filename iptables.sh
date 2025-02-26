@@ -237,7 +237,14 @@ $IPT -A OUTPUT -j DROP
 
 ######---------------------------
 #echo "Block a specific ip-address"
-#BLOCK_THIS_IP="x.x.x.x"
-#iptables -A INPUT -s "$BLOCK_THIS_IP" -j DROP
+#BLOCK_THESE_IPS="x.x.x.x x.x.x.x x.x.x.x"
+#for blockip in $BLOCK_THESE_IPS
+#do
+#    echo "Blocking the IPADDR '$blockip'"
+#    $IPT -A INPUT -s "$blockip" -j DROP
+#done
 
+######---------------------------
+######-----/// EOF SCRIPT
+######---------------------------
 exit 0
