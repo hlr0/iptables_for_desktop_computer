@@ -7,8 +7,8 @@ SERVER_IP="$(ip addr show enp1s0 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
 # Your DNS servers you use: cat /etc/resolv.conf
 DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
 
-# Allow connections to this package servers (Ubuntu 24.04 package servers)
-PACKAGE_SERVER="archive.ubuntu.com security.ubuntu.com"
+# Allow connections to this package servers
+PACKAGE_SERVER="ftp.us.debian.org security.debian.org"
 
 echo "flush iptable rules"
 $IPT -F
@@ -27,44 +27,32 @@ $IPT -P OUTPUT  DROP
 ## so dns lookups are already allowed for your other rules
 for ip in $DNS_SERVER
 do
-    echo "Allowing DNS lookups (tcp, udp port 53) to server '$ip'"
-    $IPT -A OUTPUT -p udp -d $ip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
-    $IPT -A INPUT  -p udp -s $ip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
-    $IPT -A OUTPUT -p tcp -d $ip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
-    $IPT -A INPUT  -p tcp -s $ip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
+	echo "Allowing DNS lookups (tcp, udp port 53) to server '$ip'"
+	$IPT -A OUTPUT -p udp -d $ip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+	$IPT -A INPUT  -p udp -s $ip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
+	$IPT -A OUTPUT -p tcp -d $ip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+	$IPT -A INPUT  -p tcp -s $ip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
 done
 
 echo "allow all and everything on localhost"
 $IPT -A INPUT -i lo -j ACCEPT
 $IPT -A OUTPUT -o lo -j ACCEPT
 
-# Resolve the domain names to IP addresses for package servers
-for domain in $PACKAGE_SERVER
+for ip in $PACKAGE_SERVER
 do
-    IP=$(dig +short $domain | head -n 1)  # Get the first IP address for the domain
+	echo "Allow connection to '$ip' on port 21"
+	$IPT -A OUTPUT -p tcp -d "$ip" --dport 21  -m state --state NEW,ESTABLISHED -j ACCEPT
+	$IPT -A INPUT  -p tcp -s "$ip" --sport 21  -m state --state ESTABLISHED     -j ACCEPT
 
-    if [ -z "$IP" ]; then
-        echo "Unable to resolve domain: $domain"
-        continue
-    fi
+	echo "Allow connection to '$ip' on port 80"
+	$IPT -A OUTPUT -p tcp -d "$ip" --dport 80  -m state --state NEW,ESTABLISHED -j ACCEPT
+	$IPT -A INPUT  -p tcp -s "$ip" --sport 80  -m state --state ESTABLISHED     -j ACCEPT
 
-    echo "Allow connection to '$domain' ($IP) on port 80"
-    $IPT -A OUTPUT -p tcp -d "$IP" --dport 80  -m state --state NEW,ESTABLISHED -j ACCEPT
-    $IPT -A INPUT  -p tcp -s "$IP" --sport 80  -m state --state ESTABLISHED     -j ACCEPT
-
-    echo "Allow connection to '$domain' ($IP) on port 443"
-    $IPT -A OUTPUT -p tcp -d "$IP" --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-    $IPT -A INPUT  -p tcp -s "$IP" --sport 443 -m state --state ESTABLISHED     -j ACCEPT
+	echo "Allow connection to '$ip' on port 443"
+	$IPT -A OUTPUT -p tcp -d "$ip" --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+	$IPT -A INPUT  -p tcp -s "$ip" --sport 443 -m state --state ESTABLISHED     -j ACCEPT
 done
 
-# Allow HTTP and HTTPS for browsing
-echo "Allow outgoing HTTP (port 80) for browsing"
-$IPT -A OUTPUT -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT  -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
-
-echo "Allow outgoing HTTPS (port 443) for browsing"
-$IPT -A OUTPUT -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT  -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
 
 #######################################################################################################
 ## Global iptable rules. Not IP specific
