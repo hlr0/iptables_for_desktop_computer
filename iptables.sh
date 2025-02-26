@@ -114,56 +114,62 @@ echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 
 
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
 
-
-
-
+#!/bin/bash
+IPT="/sbin/iptables"
 
 echo "Flush all existing chains"
-iptables -F
-iptables -X
-iptables -t nat -F
-iptables -t nat -X
-iptables -t mangle -F
-iptables -t mangle -X
+$IPT -F
+$IPT -X
+$IPT -t nat -F
+$IPT -t nat -X
+$IPT -t mangle -F
+$IPT -t mangle -X
 
 echo "Creating default policies"
-iptables -P INPUT DROP
-iptables -P OUTPUT DROP
-iptables -P FORWARD DROP
+$IPT -P INPUT DROP
+$IPT -P OUTPUT DROP
+$IPT -P FORWARD DROP
 
 echo "Allow traffic on loopback"
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A OUTPUT -o lo -j ACCEPT
+$IPT -A INPUT -i lo -j ACCEPT
+$IPT -A OUTPUT -o lo -j ACCEPT
 
 echo "Ping from inside to outside"
-iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
-iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+$IPT -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+$IPT -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
 
 echo "Ping from outside to inside"
-iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
-iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+$IPT -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+$IPT -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
 
 echo "Allow previously established connections to continue uninterupted"
-iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+$IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+$IPT -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 echo "Allow outbound DNS"
-iptables -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
-iptables -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
+$IPT -A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
+$IPT -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
 
 echo "Allow outbound connections on the ports we previously decided."
-iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT #DNS
-iptables -A OUTPUT -p udp --dport 53 -j ACCEPT #DNS
-iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT #HTTP
-iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT #HTTPS
-iptables -A OUTPUT -p UDP --dport 67:68 -j ACCEPT #DHCP
+$IPT -A OUTPUT -p tcp --dport 53 -j ACCEPT #DNS
+$IPT -A OUTPUT -p udp --dport 53 -j ACCEPT #DNS
+$IPT -A OUTPUT -p tcp --dport 80 -j ACCEPT #HTTP
+$IPT -A OUTPUT -p tcp --dport 443 -j ACCEPT #HTTPS
+$IPT -A OUTPUT -p UDP --dport 67:68 -j ACCEPT #DHCP
 
 echo "Prevent DoS attack"
-iptables -A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
+$IPT -A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
 
 echo "Set up logging for incoming traffic."
-iptables -N LOGNDROP
-iptables -A INPUT -j LOGNDROP
-iptables -A LOGNDROP -j LOG
-iptables -A LOGNDROP -j DROP
+$IPT -N LOGNDROP
+$IPT -A INPUT -j LOGNDROP
+$IPT -A LOGNDROP -j LOG
+$IPT -A LOGNDROP -j DROP
+
+exit 0
