@@ -99,23 +99,34 @@ echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 #Log impossible (martian) packets
 echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 
-#Flush all existing chains
-iptables --flush
 
-#Allow traffic on loopback
+
+
+
+
+
+echo "Flush all existing chains"
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+iptables -t mangle -F
+iptables -t mangle -X
+
+echo "Allow traffic on loopback"
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 
-#Creating default policies
+echo "Creating default policies"
 iptables -P INPUT DROP
 iptables -P OUTPUT DROP
-iptables -P FORWARD DROP #If we're not a router
+iptables -P FORWARD DROP
 
-#Allow previously established connections to continue uninterupted
+echo "Allow previously established connections to continue uninterupted"
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
-#Allow outbound connections on the ports we previously decided.
+echo "Allow outbound connections on the ports we previously decided."
 iptables -A OUTPUT -p tcp --dport 25 -j ACCEPT #SMTP
 iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT #DNS
 iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT #HTTP
@@ -127,7 +138,7 @@ iptables -A OUTPUT -p UDP --dport 67:68 -j ACCEPT #DHCP
 iptables -A OUTPUT -p udp --dport 53 -j ACCEPT #DNS
 iptables -A OUTPUT -p udp --dport 51413 -j ACCEPT #BT
 
-#Set up logging for incoming traffic.
+echo "Set up logging for incoming traffic."
 iptables -N LOGNDROP
 iptables -A INPUT -j LOGNDROP
 iptables -A LOGNDROP -j LOG
