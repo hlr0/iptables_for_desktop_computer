@@ -236,7 +236,7 @@ $IPT -A OUTPUT -j LOG -m limit --limit 12/min --log-level 4 --log-prefix 'IP OUT
 $IPT -A OUTPUT -j DROP
 
 ######---------------------------
-#echo "Block a specific ip-address"
+#echo "Blocking specific IPADDRS"
 #BLOCK_THESE_IPS="x.x.x.x x.x.x.x x.x.x.x"
 #for blockip in $BLOCK_THESE_IPS
 #do
