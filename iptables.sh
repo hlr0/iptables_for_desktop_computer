@@ -185,7 +185,7 @@ $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 443 -j ACCEPT #HTTPS
 $IPT -A OUTPUT -p UDP -o $NETIF_0 --dport 67:68 -j ACCEPT #DHCP
 
 echo "Prevent DoS attack"
-$IPT -A INPUT -p tcp -i $NETIF_0 --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
+
 
 echo "Set up logging for incoming traffic."
 $IPT -N LOGNDROP
