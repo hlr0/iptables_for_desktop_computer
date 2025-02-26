@@ -126,7 +126,7 @@ IPT="/sbin/iptables"
 ######-----/// SETTINGS OF SYSTEM
 ######---------------------------------------------------------------------------------
 echo "Setting Network Cards"
-NETIF_0="enp1s0"  	# Update to use your second network card
+NETIF_0="enp1s0"  	# Update to use your first network card
 NETIF_1="enp1s1"  	# Update to use your second network card
 
 ######---------------------------
