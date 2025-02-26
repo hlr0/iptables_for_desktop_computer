@@ -132,6 +132,7 @@ DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
 
 echo "Getting Server IP"
 SERVER_IP_0="$(ip addr show $NETIF_0 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
+SERVER_IP_1="$(ip addr show $NETIF_1 | grep 'inet ' | cut -f2 | awk '{ print $2}')"
 
 echo "Flush all existing chains"
 $IPT -F
