@@ -197,7 +197,7 @@ $IPT -A OUTPUT -o $NETIF_0 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j
 $IPT -A INPUT -i $NETIF_0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
-echo "Allow outbound connections on the ports we previously decided."
+echo "Allow outbound connections on the ports specific ports."
 $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 53 -j ACCEPT #DNS
 $IPT -A OUTPUT -p udp -o $NETIF_0 --dport 53 -j ACCEPT #DNS
 $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 80 -j ACCEPT #HTTP
