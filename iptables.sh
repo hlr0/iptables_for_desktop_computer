@@ -113,14 +113,14 @@ iptables -t nat -X
 iptables -t mangle -F
 iptables -t mangle -X
 
-echo "Allow traffic on loopback"
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A OUTPUT -o lo -j ACCEPT
-
 echo "Creating default policies"
 iptables -P INPUT DROP
 iptables -P OUTPUT DROP
 iptables -P FORWARD DROP
+
+echo "Allow traffic on loopback"
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
 
 echo "Allow previously established connections to continue uninterupted"
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
