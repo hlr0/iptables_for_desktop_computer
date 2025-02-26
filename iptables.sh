@@ -27,32 +27,41 @@ $IPT -P OUTPUT  DROP
 ## so dns lookups are already allowed for your other rules
 for ip in $DNS_SERVER
 do
-	echo "Allowing DNS lookups (tcp, udp port 53) to server '$ip'"
-	$IPT -A OUTPUT -p udp -d $ip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
-	$IPT -A INPUT  -p udp -s $ip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
-	$IPT -A OUTPUT -p tcp -d $ip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
-	$IPT -A INPUT  -p tcp -s $ip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
+    echo "Allowing DNS lookups (tcp, udp port 53) to server '$ip'"
+    $IPT -A OUTPUT -p udp -d $ip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p udp -s $ip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
+    $IPT -A OUTPUT -p tcp -d $ip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p tcp -s $ip --sport 53 -m state --state ESTABLISHED     -j ACCEPT
 done
 
 echo "allow all and everything on localhost"
 $IPT -A INPUT -i lo -j ACCEPT
 $IPT -A OUTPUT -o lo -j ACCEPT
 
+# Allow HTTP and HTTPS for browsing
+echo "Allow outgoing HTTP (port 80) for browsing"
+$IPT -A OUTPUT -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT  -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
+
+echo "Allow outgoing HTTPS (port 443) for browsing"
+$IPT -A OUTPUT -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT  -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
+
+# Allow connection to package servers
 for ip in $PACKAGE_SERVER
 do
-	echo "Allow connection to '$ip' on port 21"
-	$IPT -A OUTPUT -p tcp -d "$ip" --dport 21  -m state --state NEW,ESTABLISHED -j ACCEPT
-	$IPT -A INPUT  -p tcp -s "$ip" --sport 21  -m state --state ESTABLISHED     -j ACCEPT
+    echo "Allow connection to '$ip' on port 21"
+    $IPT -A OUTPUT -p tcp -d "$ip" --dport 21  -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p tcp -s "$ip" --sport 21  -m state --state ESTABLISHED     -j ACCEPT
 
-	echo "Allow connection to '$ip' on port 80"
-	$IPT -A OUTPUT -p tcp -d "$ip" --dport 80  -m state --state NEW,ESTABLISHED -j ACCEPT
-	$IPT -A INPUT  -p tcp -s "$ip" --sport 80  -m state --state ESTABLISHED     -j ACCEPT
+    echo "Allow connection to '$ip' on port 80"
+    $IPT -A OUTPUT -p tcp -d "$ip" --dport 80  -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p tcp -s "$ip" --sport 80  -m state --state ESTABLISHED     -j ACCEPT
 
-	echo "Allow connection to '$ip' on port 443"
-	$IPT -A OUTPUT -p tcp -d "$ip" --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-	$IPT -A INPUT  -p tcp -s "$ip" --sport 443 -m state --state ESTABLISHED     -j ACCEPT
+    echo "Allow connection to '$ip' on port 443"
+    $IPT -A OUTPUT -p tcp -d "$ip" --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p tcp -s "$ip" --sport 443 -m state --state ESTABLISHED     -j ACCEPT
 done
-
 
 #######################################################################################################
 ## Global iptable rules. Not IP specific
