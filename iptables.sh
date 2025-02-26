@@ -188,13 +188,13 @@ done
 
 ######---------------------------
 echo "Allow previously established connections to continue uninterupted"
-$IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-$IPT -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+$IPT -A INPUT -o $NETIF_0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+$IPT -A OUTPUT -i $NETIF_0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ######---------------------------
 echo "Allow outgoing SSH"
-iptables -A OUTPUT -o eth0 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -o $NETIF_0 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF_0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo "Allow outbound connections on the ports we previously decided."
