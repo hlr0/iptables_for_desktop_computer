@@ -24,6 +24,7 @@
 #     2025/02/26 : Me : Added kernel hardening 
 #     2025/02/27 : Me : Added header and settings
 #     2025/02/27 : Me : Added various iptables rules 
+#     2025/02/27 : Me : Added block ipaddr iptables rules 
 # 
 #================================================================
 #  DEBUG OPTION
