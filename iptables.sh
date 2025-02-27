@@ -20,7 +20,8 @@
 #================================================================
 #  HISTORY
 #     2025/02/25 : Me : Script creation
-#     2025/02/25 : Me : Added various rules 
+#     2025/02/26 : Me : Added kernel hardening 
+#     2025/02/27 : Me : Added various iptables rules 
 # 
 #================================================================
 #  DEBUG OPTION
