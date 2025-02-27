@@ -187,6 +187,15 @@ $IPT -A LOGNDROP -j DROP
 $IPT -A INPUT -j LOGNDROP
 $IPT -A OUTPUT -j LOGNDROP
 
+
+
+######---------------------------
+#echo "Blocking specific IPADDRS"
+#BLOCK_THESE_IPS="x.x.x.x x.x.x.x x.x.x.x"
+#for blockip in $BLOCK_THESE_IPS
+#do
+
+
 ####################################################################################################
 ####################################################################################################
 #####-----/// END IPTABLES SCRIPT
