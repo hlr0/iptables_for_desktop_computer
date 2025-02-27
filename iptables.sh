@@ -228,7 +228,10 @@ $IPT -A INPUT -i $NETIF_0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCE
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing HTTP and HTTPS \n----------------------------------------\n "
 $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -p tcp -i $NETIF_0 --sport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+
 $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -p tcp -i $NETIF_0 --sport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing RDP Connections \n----------------------------------------\n "
@@ -253,11 +256,11 @@ $IPT -A OUTPUT -j LOGNDROP
 ####################################################################################################
 #####-----/// BLOCK IPADDR SECTION
 ######---------------------------
-#echo "Blocking specific IPADDRS"
-#BLOCK_THESE_IPS="x.x.x.x x.x.x.x x.x.x.x"
-#for blockip in $BLOCK_THESE_IPS
-    #$IPT -A INPUT -s $blockip -j DROP
-#do
+echo -e "----------------------------------------\n  Blocking specific IPADDRS \n----------------------------------------\n "
+BLOCK_THESE_IPS="192.168.0.243"
+for blockip in $BLOCK_THESE_IPS
+   $IPT -A INPUT -s $blockip -j DROP
+do
 
 ####################################################################################################
 ####################################################################################################
