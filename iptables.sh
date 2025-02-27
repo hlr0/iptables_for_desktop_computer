@@ -3,7 +3,7 @@
 # HEADER
 #================================================================
 #% SYNOPSIS
-#+    ${iptables.sh} [-f]
+#+    ${iptables.sh}
 #%
 #% DESCRIPTION
 #%    This is a Iptables Script for setup of Desktop Computer - Everyday
@@ -11,13 +11,13 @@
 #%    Adjust the script to add your own dns servers and network cards
 #%
 #% OPTIONS
-#%    -f, --fresh                   Will Revert all changes and flush
+#%    -c, --clean                   Will Revert all changes and flush
 #%                                  the iptables rules, chains, tables allowing
 #%                                  to start from a clean slate or to
 #%                                  revert any changes made to the system
 #%
 #% EXAMPLES
-#%    ${SCRIPT_NAME} -o DEFAULT arg1 arg2
+#%    ${iptables.sh} [--clean]
 #%
 #================================================================
 #- IMPLEMENTATION
@@ -111,8 +111,8 @@ fi
 ######-----/// FUNCTIONS
 ######---------------------------------------------------------------------------------
 ######---------------------------
-if [[ "$1" == "--fresh" || "$1" == "-f" ]]; then
-    echo -e "---------------------\n CLEAN SLATE FRESH IPTABLES START \n----------------------------\n"
+if [[ "$1" == "--clean" || "$1" == "-c" ]]; then
+    echo -e "---------------------\n CLEAN SLATE PROTOCOL START \n----------------------------\n"
     $IPT -F
     $IPT -X
     $IPT -P INPUT ACCEPT
