@@ -226,14 +226,14 @@ $IPT -A OUTPUT -o $NETIF_0 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j
 $IPT -A INPUT -i $NETIF_0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
-echo -e "----------------------------------------\n  Allow HTTP and HTTPS \n----------------------------------------\n "
+echo -e "----------------------------------------\n  Allow outgoing HTTP and HTTPS \n----------------------------------------\n "
 $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 ######---------------------------
-echo -e "----------------------------------------\n  Allow RDP Connections \n----------------------------------------\n "
-$IPT -A INPUT -p tcp -o $NETIF_0 --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEP
+echo -e "----------------------------------------\n  Allow outgoing RDP Connections \n----------------------------------------\n "
+$IPT -A OUTPUT -o $NETIF_0 -p tcp --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF_0 -p tcp --sport 3389 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Prevent DoS attack \n----------------------------------------\n "
