@@ -25,24 +25,22 @@
 #     2025/02/27 : Me : Added header and settings
 #     2025/02/27 : Me : Added various iptables rules 
 #     2025/02/27 : Me : Added block ipaddr iptables rules 
-# 
-#================================================================
-#  DEBUG OPTION
-#    set -n  # Uncomment to check your syntax, without execution.
-#    set -x  # Uncomment to debug this shell script
+#     2025/02/27 : Me : Added revert changes
 #
+#================================================================
+#+  USAGE OPTIONS
+#+    ${iptables.sh}                ---- Run the IPTABLES RULES
+#+    ${iptables.sh} [--revert|-r]  ---- Reverting IPTABLES RULES
+#+
 #================================================================
 #  LOGS LOCATION
 #    LOGS IPTABLES: Ubuntu / Kali / Debian:  grep "IPTABLES DROP:" /var/log/syslog
 #    LOGS IPTABLES: Centos / AlmaLinux / RedHat:  grep "IPTABLES DROP:" /var/log/messages
 #
 #================================================================
-#  REVERT IPTABLES MODIFICATION - if you cannot access the internet anymore
-#    iptables -F
-#    iptables -X
-#    iptables -P INPUT ACCEPT
-#    iptables -P OUTPUT ACCEPT
-#    iptables -P FORWARD ACCEPT
+#  DEBUG OPTION
+#    set -n  # Uncomment to check your syntax, without execution.
+#    set -x  # Uncomment to debug this shell script
 #
 #================================================================
 #- OS SAVE OR RESTORE RULES
@@ -75,6 +73,51 @@
 #Setting the default iptables super bin file
 IPT="/sbin/iptables"
 
+
+######---------------------------------------------------------------------------------
+######-----/// SETTINGS
+######---------------------------------------------------------------------------------
+echo -e "------------\n Setting Network Cards \n------------\n"
+NETIF_0="eth0"  # Update to use your first network card
+NETIF_1="eth1"  # Update to use your second network card
+
+######---------------------------
+echo -e "------------\n Setting your DNS servers \n------------\n"
+DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
+
+######---------------------------
+echo -e "------------\n Getting Server IP and Check Network Cards \n------------\n"
+if ip link show $NETIF_0 >/dev/null 2>&1; then
+    SERVER_IP_0="$(ip -4 addr show $NETIF_0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
+    echo -e "$NETIF_0 exists with IP: $SERVER_IP_0"
+else
+    echo -e "$NETIF_0 does not exist"
+    SERVER_IP_0=""
+fi
+
+if ip link show $NETIF_1 >/dev/null 2>&1; then
+    SERVER_IP_1="$(ip -4 addr show $NETIF_1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
+    echo -e "$NETIF_1 exists with IP: $SERVER_IP_1"
+else
+    echo -e "$NETIF_1 does not exist"
+    SERVER_IP_1=""
+fi
+
+######---------------------------------------------------------------------------------
+######-----/// FUNCTIONS
+######---------------------------------------------------------------------------------
+######---------------------------
+if [[ "$1" == "--revert" || "$1" == "-r" ]]; then
+    echo -e "---------------------\n REVERTING IPTABLES MODIFICATION \n----------------------------\n"
+    $IPT -F
+    $IPT -X
+    $IPT -P INPUT ACCEPT
+    $IPT -P OUTPUT ACCEPT
+    $IPT -P FORWARD ACCEPT
+    exit 0
+fi
+
+
 ######---------------------------------------------------------------------------------
 ######-----/// KERNEL HARDENING
 ######---------------------------------------------------------------------------------
@@ -96,24 +139,10 @@ echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 
 ######---------------------------------------------------------------------------------
-######-----/// SETTINGS
-######---------------------------------------------------------------------------------
-echo -e "------------\n Setting Network Cards \n------------\n"
-NETIF_0="eth0"  # Update to use your first network card
-NETIF_1="eth1"  # Update to use your second network card
-
-######---------------------------
-echo -e "------------\n Setting your DNS servers \n------------\n"
-DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
-
-######---------------------------
-echo -e "------------\n Getting Server IP \n------------\n"
-SERVER_IP_0="$(ip -4 addr show $NETIF_0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
-SERVER_IP_1="$(ip -4 addr show $NETIF_1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
-
-######---------------------------------------------------------------------------------
 ######-----/// START IPTABLES RULES
 ######---------------------------------------------------------------------------------
+
+######---------------------------
 echo -e "------------\n Flush all existing tables \n------------\n"
 $IPT -F
 $IPT -X
