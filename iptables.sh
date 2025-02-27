@@ -31,13 +31,19 @@
 #    set -x  # Uncomment to debug this shell script
 #
 #================================================================
-#  REVERT OPTION - if you cannot access the internet anymore
+#  REVERT IPTABLES MODIFICATION - if you cannot access the internet anymore
 #    iptables -F
 #    iptables -X
 #    iptables -P INPUT ACCEPT
 #    iptables -P OUTPUT ACCEPT
 #    iptables -P FORWARD ACCEPT
 #
+#================================================================
+#  OS SAVE OR RESTORE RULES - if you want to save or restore the rules before reboot
+#-    RED HAT: 
+#-    UBUNTU: 24.04: -- iptables-save > /etc/iptables/rules.v4
+#-    KALI: 2024.3: -- iptables-save > /etc/iptables/rules.v4
+#-
 #================================================================
 # END_OF_HEADER
 #================================================================
