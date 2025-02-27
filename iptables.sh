@@ -11,17 +11,18 @@
 #%    Adjust the script to add your own dns servers and network cards
 #%
 #% OPTIONS
+#%    -h, --help                    Display this help message
 #%    -c, --clean                   Will Revert all changes and flush
 #%                                  the iptables rules, chains, tables allowing
 #%                                  to start from a clean slate or to
 #%                                  revert any changes made to the system
 #%
 #% EXAMPLES
-#%    ${iptables.sh} [--clean]
+#%    ${iptables.sh} [--help|--clean]
 #%
 #================================================================
 #- IMPLEMENTATION
-#-    version         ${iptables.sh} 0.0.4
+#-    version         ${iptables.sh} 0.0.6
 #-    author          Some Dude that thinks iptables is cool
 #-    copyright       Copyright (c) Free For All
 #-    license         GNU General Public License
@@ -35,6 +36,8 @@
 #     2025/02/27 : Me : Added various iptables rules 
 #     2025/02/27 : Me : Added block ipaddr iptables rules 
 #     2025/02/27 : Me : Added revert changes
+#     2025/02/27 : Me : Added help function
+#     2025/02/27 : Me : Added POP3/IMAP rules for email clients
 #
 #================================================================
 #  LOGS LOCATION
@@ -80,6 +83,68 @@ IPT="/sbin/iptables"
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
+######-----/// FUNCTIONS
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+
+######---------------------------
+# Help function
+show_help() {
+    echo "Iptables Script for Desktop Computer Setup"
+    echo ""
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help     Show this help message and exit"
+    echo "  -c, --clean    Revert all changes and flush the iptables rules,"
+    echo "                 chains, and tables allowing to start from a clean"
+    echo "                 slate or to revert any changes made to the system"
+    echo ""
+    echo "Examples:"
+    echo "  $0             Run the script with default firewall rules"
+    echo "  $0 --clean     Flush all iptables rules and set default policies to ACCEPT"
+    echo "  $0 --help      Display this help message"
+    echo ""
+    echo "Note: This script must be run with root privileges"
+    exit 0
+}
+
+######---------------------------
+# Clean function
+clean_iptables() {
+    echo -e "\n\n"
+    echo -e "--------------------------------------------------------------------------------------------------"
+    echo -e "--------------------------------------------------------------------------------------------------"
+    echo -e "--------------------------------------------------------------------------------------------------"
+    echo -e "CLEAN SLATE PROTOCOL START"
+    echo -e "--------------------------------------------------------------------------------------------------"
+    echo -e "--------------------------------------------------------------------------------------------------"
+    echo -e "--------------------------------------------------------------------------------------------------"
+    $IPT -F
+    $IPT -X
+    $IPT -P INPUT ACCEPT
+    $IPT -P OUTPUT ACCEPT
+    $IPT -P FORWARD ACCEPT
+    $IPT -nvL
+    echo -e "\n------------------------------------------------- Finished Clean Slate Protocol-------------------------------------------------"
+    exit 0
+}
+
+######---------------------------
+# Parse command line arguments
+case "$1" in
+    --help|-h)
+        show_help
+        ;;
+    --clean|-c)
+        clean_iptables
+        ;;
+esac
+
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
 ######-----/// SETTINGS
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -102,34 +167,6 @@ else
     exit 0
 fi
 echo -e "\n"
-
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######-----/// FUNCTIONS
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-
-######---------------------------
-if [[ "$1" == "--clean" || "$1" == "-c" ]]; then
-    echo -e "\n\n"
-    echo -e "--------------------------------------------------------------------------------------------------"
-    echo -e "--------------------------------------------------------------------------------------------------"
-    echo -e "--------------------------------------------------------------------------------------------------"
-    echo -e "CLEAN SLATE PROTOCOL START"
-    echo -e "--------------------------------------------------------------------------------------------------"
-    echo -e "--------------------------------------------------------------------------------------------------"
-    echo -e "--------------------------------------------------------------------------------------------------"
-    $IPT -F
-    $IPT -X
-    $IPT -P INPUT ACCEPT
-    $IPT -P OUTPUT ACCEPT
-    $IPT -P FORWARD ACCEPT
-    $IPT -nvL
-    echo -e "\n------------------------------------------------- Finished Clean Slate Protocol-------------------------------------------------"
-    exit 0
-fi
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -240,6 +277,36 @@ $IPT -A INPUT -p tcp -i $NETIF --sport 443 -m state --state ESTABLISHED -j ACCEP
 echo -e "----------------------------------------\n  Allow outgoing RDP Connections \n----------------------------------------\n "
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 3389 -m state --state ESTABLISHED -j ACCEPT
+
+######---------------------------
+echo -e "----------------------------------------\n  Allow Email Client Protocols (POP3/IMAP) \n----------------------------------------\n "
+# POP3 (port 110)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 110 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 110 -m state --state ESTABLISHED -j ACCEPT
+
+# POP3S (port 995)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 995 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 995 -m state --state ESTABLISHED -j ACCEPT
+
+# IMAP (port 143)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 143 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 143 -m state --state ESTABLISHED -j ACCEPT
+
+# IMAPS (port 993)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 993 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 993 -m state --state ESTABLISHED -j ACCEPT
+
+# SMTP (port 25) - for sending emails
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 25 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 25 -m state --state ESTABLISHED -j ACCEPT
+
+# Submission (port 587) - for sending emails with authentication
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 587 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 587 -m state --state ESTABLISHED -j ACCEPT
+
+# SMTPS (port 465) - Secure SMTP
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 465 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 465 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Prevent DoS attack \n----------------------------------------\n "
