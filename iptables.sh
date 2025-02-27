@@ -220,7 +220,9 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing HTTP and HTTPS \n----------------------------------------\n "
 $IPT -A OUTPUT -p tcp -o $NETIF --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -p tcp -i $NETIF --sport 80 -m state --state ESTABLISHED -j ACCEPT
 $IPT -A OUTPUT -p tcp -o $NETIF --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -p tcp -i $NETIF --sport 443 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing RDP Connections \n----------------------------------------\n "
@@ -237,10 +239,6 @@ echo -e "----------------------------------------\n  Logging and Dropping Unwant
 $IPT -N LOGNDROP
 $IPT -A LOGNDROP -m limit --limit 5/min -j LOG --log-prefix "IPTABLES DROP: " --log-level 4
 $IPT -A LOGNDROP -j DROP
-
-$IPT -A INPUT -j LOGNDROP
-$IPT -A OUTPUT -j LOGNDROP
-
 
 ####################################################################################################
 #####-----/// BLOCK IPADDR SECTION
