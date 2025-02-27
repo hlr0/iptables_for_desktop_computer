@@ -3,12 +3,21 @@
 # HEADER
 #================================================================
 #% SYNOPSIS
-#+    ${iptables.sh}
+#+    ${iptables.sh} [-f]
 #%
 #% DESCRIPTION
 #%    This is a Iptables Script for setup of Desktop Computer - Everyday
 #%    Ping, dns, dhcp, ssh, http, https, working and will set establish and new connection
 #%    Adjust the script to add your own dns servers and network cards
+#%
+#% OPTIONS
+#%    -f, --fresh                   Will Revert all changes and flush
+#%                                  the iptables rules allowing
+#%                                  to start from a clean slate or to
+#%                                  revert any changes made to the system
+#%
+#% EXAMPLES
+#%    ${SCRIPT_NAME} -o DEFAULT arg1 arg2
 #%
 #================================================================
 #- IMPLEMENTATION
@@ -27,11 +36,6 @@
 #     2025/02/27 : Me : Added block ipaddr iptables rules 
 #     2025/02/27 : Me : Added revert changes
 #
-#================================================================
-#+  USAGE OPTIONS
-#+    ${iptables.sh}                ---- Run the IPTABLES RULES
-#+    ${iptables.sh} [--revert|-r]  ---- Reverting IPTABLES RULES
-#+
 #================================================================
 #  LOGS LOCATION
 #    LOGS IPTABLES: Ubuntu / Kali / Debian:  grep "IPTABLES DROP:" /var/log/syslog
@@ -107,8 +111,8 @@ fi
 ######-----/// FUNCTIONS
 ######---------------------------------------------------------------------------------
 ######---------------------------
-if [[ "$1" == "--revert" || "$1" == "-r" ]]; then
-    echo -e "---------------------\n REVERTING IPTABLES MODIFICATION \n----------------------------\n"
+if [[ "$1" == "--fresh" || "$1" == "-f" ]]; then
+    echo -e "---------------------\n CLEAN SLATE FRESH IPTABLES START \n----------------------------\n"
     $IPT -F
     $IPT -X
     $IPT -P INPUT ACCEPT
