@@ -39,10 +39,24 @@
 #    iptables -P FORWARD ACCEPT
 #
 #================================================================
-#  OS SAVE OR RESTORE RULES - if you want to save or restore the rules before reboot
-#-    RED HAT: 
-#-    UBUNTU: 24.04: -- iptables-save > /etc/iptables/rules.v4
-#-    KALI: 2024.3: -- iptables-save > /etc/iptables/rules.v4
+#- OS SAVE OR RESTORE RULES
+#- Use these commands to save or restore iptables rules before reboot.
+#- You can specify IPv4 or IPv6 rules as needed.
+#- 
+#- 
+#- RED HAT:
+#- Save:    iptables-save > /etc/sysconfig/iptables
+#- Restore: iptables-restore < /etc/sysconfig/iptables
+#- 
+#-
+#-UBUNTU (24.04) OR KALI (2024.3):
+#- Save:    
+#- iptables-save > /etc/iptables/rules.v4
+#- ip6tables-save > /etc/iptables/rules.v6
+#-
+#- Restore: 
+#- iptables-restore < /etc/iptables/rules.v4
+#- ip6tables-restore < /etc/iptables/rules.v6
 #-
 #================================================================
 # END_OF_HEADER
