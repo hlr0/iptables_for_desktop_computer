@@ -1,5 +1,35 @@
 #!/bin/bash
-
+#================================================================
+# HEADER
+#================================================================
+#% SYNOPSIS
+#+    ${iptables.sh}
+#%
+#% DESCRIPTION
+#%    This is a Iptables Script for setup of Desktop Computer - Everyday
+#%    Ping, dns, dhcp, ssh, http, https, working and will set establish and new connection
+#%
+#================================================================
+#- IMPLEMENTATION
+#-    version         ${iptables.sh} 0.0.4
+#-    author          Some Dude that thinks iptables is cool
+#-    copyright       Copyright (c) Free For All
+#-    license         GNU General Public License
+#-    script_id       12345
+#-
+#================================================================
+#  HISTORY
+#     2025/02/25 : Me : Script creation
+#     2025/02/25 : Me : Added various rules 
+# 
+#================================================================
+#  DEBUG OPTION
+#    set -n  # Uncomment to check your syntax, without execution.
+#    set -x  # Uncomment to debug this shell script
+#
+#================================================================
+# END_OF_HEADER
+#================================================================
 ####################################################################################################
 ####################################################################################################
 ####################################################################################################
