@@ -8,6 +8,7 @@
 #% DESCRIPTION
 #%    This is a Iptables Script for setup of Desktop Computer - Everyday
 #%    Ping, dns, dhcp, ssh, http, https, working and will set establish and new connection
+#%    Adjust the script to add your own dns servers and network cards
 #%
 #================================================================
 #- IMPLEMENTATION
