@@ -12,7 +12,7 @@
 #%
 #% OPTIONS
 #%    -f, --fresh                   Will Revert all changes and flush
-#%                                  the iptables rules allowing
+#%                                  the iptables rules, chains, tables allowing
 #%                                  to start from a clean slate or to
 #%                                  revert any changes made to the system
 #%
