@@ -85,8 +85,7 @@ IPT="/sbin/iptables"
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 echo -e "----------------------------------------\n  Setting Network Cards \n----------------------------------------\n "
-NETIF_0="eth0"  # Update to use your first network card
-NETIF_1="eth1"  # Update to use your second network card
+NETIF="eth0"  # Update to use your first network card
 
 ######---------------------------
 echo -e "----------------------------------------\n  Setting your DNS servers \n----------------------------------------\n "
@@ -94,20 +93,13 @@ DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
 
 ######---------------------------
 echo -e "----------------------------------------\n  Getting Server IP and Check Network Cards \n----------------------------------------\n "
-if ip link show $NETIF_0 >/dev/null 2>&1; then
-    SERVER_IP_0="$(ip -4 addr show $NETIF_0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
-    echo -e "$NETIF_0 exists with IP: $SERVER_IP_0"
+if ip link show $NETIF >/dev/null 2>&1; then
+    SERVER_IP="$(ip -4 addr show $NETIF | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
+    echo -e "$NETIF exists with IP: $SERVER_IP_0"
 else
-    echo -e "$NETIF_0 does not exist"
-    SERVER_IP_0=""
-fi
-
-if ip link show $NETIF_1 >/dev/null 2>&1; then
-    SERVER_IP_1="$(ip -4 addr show $NETIF_1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
-    echo -e "$NETIF_1 exists with IP: $SERVER_IP_1"
-else
-    echo -e "$NETIF_1 does not exist"
-    SERVER_IP_1=""
+    echo -e "$NETIF does not exist"
+    echo -e "Please set up network card then try again."
+    exit 0
 fi
 echo -e "\n"
 
@@ -147,21 +139,21 @@ fi
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 #Setting up default kernel tunings here (don't worry too much about these right now, they are acceptable defaults) 
-echo -e "----------------------------------------\n  Setting Kernel Parameters for Security \n----------------------------------------\n "
-#DROP ICMP echo-requests sent to broadcast/multi-cast addresses.
-echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
-#DROP source routed packets
-echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
-#Enable TCP SYN cookies
-echo 1 > /proc/sys/net/ipv4/tcp_syncookies
-#Do not ACCEPT ICMP redirect
-echo 0 > /proc/sys/net/ipv4/conf/all/accept_redirects
-#Don't send ICMP redirect 
-echo 0 >/proc/sys/net/ipv4/conf/all/send_redirects
-#Enable source spoofing protection
-echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
-#Log impossible (martian) packets
-echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
+#echo -e "----------------------------------------\n  Setting Kernel Parameters for Security \n----------------------------------------\n "
+##DROP ICMP echo-requests sent to broadcast/multi-cast addresses.
+#echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+##DROP source routed packets
+#echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
+##Enable TCP SYN cookies
+#echo 1 > /proc/sys/net/ipv4/tcp_syncookies
+##Do not ACCEPT ICMP redirect
+#echo 0 > /proc/sys/net/ipv4/conf/all/accept_redirects
+##Don't send ICMP redirect 
+#echo 0 >/proc/sys/net/ipv4/conf/all/send_redirects
+##Enable source spoofing protection
+#echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+##Log impossible (martian) packets
+#echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -222,21 +214,18 @@ $IPT -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing SSH \n----------------------------------------\n "
-$IPT -A OUTPUT -o $NETIF_0 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT -i $NETIF_0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing HTTP and HTTPS \n----------------------------------------\n "
-$IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT -p tcp -i $NETIF_0 --sport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
-
-$IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT -p tcp -i $NETIF_0 --sport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -p tcp -o $NETIF --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -p tcp -o $NETIF --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing RDP Connections \n----------------------------------------\n "
-$IPT -A OUTPUT -o $NETIF_0 -p tcp --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT -i $NETIF_0 -p tcp --sport 3389 -m state --state ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 3389 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Prevent DoS attack \n----------------------------------------\n "
