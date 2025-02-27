@@ -31,6 +31,11 @@
 #    set -x  # Uncomment to debug this shell script
 #
 #================================================================
+#  LOGS LOCATION
+#    LOGS IPTABLES: Ubuntu / Kali / Debian:  grep "IPTABLES DROP:" /var/log/syslog
+#    LOGS IPTABLES: Centos / AlmaLinux / RedHat:  grep "IPTABLES DROP:" /var/log/messages
+#
+#================================================================
 #  REVERT IPTABLES MODIFICATION - if you cannot access the internet anymore
 #    iptables -F
 #    iptables -X
