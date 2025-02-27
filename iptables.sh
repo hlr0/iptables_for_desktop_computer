@@ -216,7 +216,7 @@ for dnsip in $DNS_SERVER; do
 done
 
 ######---------------------------
-echo -e "----------------------------------------\n  Allow Established Connections \n----------------------------------------\n "
+echo -e "----------------------------------------\n  Allow Established Related Connections \n----------------------------------------\n "
 $IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 $IPT -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
@@ -229,6 +229,11 @@ $IPT -A INPUT -i $NETIF_0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCE
 echo -e "----------------------------------------\n  Allow HTTP and HTTPS \n----------------------------------------\n "
 $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+
+######---------------------------
+echo -e "----------------------------------------\n  Allow RDP Connections \n----------------------------------------\n "
+$IPT -A INPUT -p tcp -o $NETIF_0 --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -p tcp -o $NETIF_0 --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEP
 
 ######---------------------------
 echo -e "----------------------------------------\n  Prevent DoS attack \n----------------------------------------\n "
