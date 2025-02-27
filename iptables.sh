@@ -95,7 +95,7 @@ DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
 echo -e "----------------------------------------\n  Getting Server IP and Check Network Cards \n----------------------------------------\n "
 if ip link show $NETIF >/dev/null 2>&1; then
     SERVER_IP="$(ip -4 addr show $NETIF | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
-    echo -e "$NETIF exists with IP: $SERVER_IP_0"
+    echo -e "$NETIF exists with IP: $SERVER_IP"
 else
     echo -e "$NETIF does not exist"
     echo -e "Please set up network card then try again."
@@ -186,8 +186,8 @@ $IPT -P FORWARD DROP
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow traffic on loopback \n----------------------------------------\n "
-$IPT -A INPUT -i lo -j ACCEPT
 $IPT -A OUTPUT -o lo -j ACCEPT
+$IPT -A INPUT -i lo -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Ping ICMP from inside to outside \n----------------------------------------\n "
@@ -195,22 +195,34 @@ $IPT -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
 $IPT -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
 
 echo -e "----------------------------------------\n  Ping ICMP from outside to inside \n----------------------------------------\n "
-$IPT -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 $IPT -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+$IPT -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow DNS Requests \n----------------------------------------\n "
+
 for dnsip in $DNS_SERVER; do
-    $IPT -A OUTPUT -p udp -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
-    $IPT -A INPUT  -p udp -s $dnsip --sport 53 -m state --state ESTABLISHED -j ACCEPT
-    $IPT -A OUTPUT -p tcp -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
-    $IPT -A INPUT  -p tcp -s $dnsip --sport 53 -m state --state ESTABLISHED -j ACCEPT
+    $IPT -A OUTPUT -p udp -o $NETIF -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p udp -i $NETIF -s $dnsip --sport 53 -m state --state ESTABLISHED -j ACCEPT
+    $IPT -A OUTPUT -p tcp -o $NETIF -d $dnsip --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+    $IPT -A INPUT  -p tcp -i $NETIF -s $dnsip --sport 53 -m state --state ESTABLISHED -j ACCEPT
 done
+
+# Allow DNS to any server (for resolving all domains)
+$IPT -A OUTPUT -p udp -o $NETIF --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -p udp -i $NETIF --sport 53 -m state --state ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -p tcp -o $NETIF --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -p tcp -i $NETIF --sport 53 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow Established Related Connections \n----------------------------------------\n "
-$IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-$IPT -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+$IPT -A OUTPUT -o $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+$IPT -A INPUT -i $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Add DHCP section after DNS section
+echo -e "----------------------------------------\n  Allow DHCP \n----------------------------------------\n "
+$IPT -A OUTPUT -p udp --dport 67:68 --sport 67:68 -j ACCEPT
+$IPT -A INPUT -p udp --dport 67:68 --sport 67:68 -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing SSH \n----------------------------------------\n "
@@ -239,6 +251,10 @@ echo -e "----------------------------------------\n  Logging and Dropping Unwant
 $IPT -N LOGNDROP
 $IPT -A LOGNDROP -m limit --limit 5/min -j LOG --log-prefix "IPTABLES DROP: " --log-level 4
 $IPT -A LOGNDROP -j DROP
+
+# Uncomment the following line to send all remaining unmatched traffic to logging
+# $IPT -A INPUT -j LOGNDROP
+# $IPT -A OUTPUT -j LOGNDROP
 
 ####################################################################################################
 #####-----/// BLOCK IPADDR SECTION
