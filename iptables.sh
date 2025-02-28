@@ -176,21 +176,21 @@ echo -e "\n"
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 #Setting up default kernel tunings here (don't worry too much about these right now, they are acceptable defaults) 
-#echo -e "----------------------------------------\n  Setting Kernel Parameters for Security \n----------------------------------------\n "
+echo -e "----------------------------------------\n  Setting Kernel Parameters for Security \n----------------------------------------\n "
 ##DROP ICMP echo-requests sent to broadcast/multi-cast addresses.
-#echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 ##DROP source routed packets
-#echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
+echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
 ##Enable TCP SYN cookies
-#echo 1 > /proc/sys/net/ipv4/tcp_syncookies
+echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 ##Do not ACCEPT ICMP redirect
-#echo 0 > /proc/sys/net/ipv4/conf/all/accept_redirects
+echo 0 > /proc/sys/net/ipv4/conf/all/accept_redirects
 ##Don't send ICMP redirect 
-#echo 0 >/proc/sys/net/ipv4/conf/all/send_redirects
+echo 0 >/proc/sys/net/ipv4/conf/all/send_redirects
 ##Enable source spoofing protection
-#echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 ##Log impossible (martian) packets
-#echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
+echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
