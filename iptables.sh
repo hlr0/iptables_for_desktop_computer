@@ -242,6 +242,12 @@ $IPT -P INPUT DROP
 $IPT -P OUTPUT DROP
 $IPT -P FORWARD DROP
 
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######-----/// IPTABLES LOOPBACK AND PING
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+
 ######---------------------------
 echo -e "----------------------------------------\n  Allow traffic on loopback \n----------------------------------------\n "
 $IPT -A OUTPUT -o lo -j ACCEPT
@@ -255,6 +261,12 @@ $IPT -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
 echo -e "----------------------------------------\n  Ping ICMP from outside to inside \n----------------------------------------\n "
 $IPT -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
 $IPT -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######-----/// IPTABLES DNS
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow DNS Requests \n----------------------------------------\n "
@@ -277,7 +289,29 @@ echo -e "----------------------------------------\n  Allow Established Related C
 $IPT -A OUTPUT -o $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 $IPT -A INPUT -i $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
-# Add DHCP section after DNS section
+
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######-----/// IPTABLES LOGGING
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+
+######---------------------------
+echo -e "----------------------------------------\n  Logging and Dropping Unwanted Traffic \n----------------------------------------\n "
+$IPT -N LOGNDROP
+$IPT -A LOGNDROP -m limit --limit 5/min -j LOG --log-prefix "IPTABLES DROP: " --log-level 4
+$IPT -A LOGNDROP -j DROP
+
+# Uncomment the following line to send all remaining unmatched traffic to logging
+# $IPT -A INPUT -j LOGNDROP
+# $IPT -A OUTPUT -j LOGNDROP
+
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######-----/// IPTABLES VARIOUS SERVICES
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+
 echo -e "----------------------------------------\n  Allow DHCP \n----------------------------------------\n "
 $IPT -A OUTPUT -p udp --dport 67:68 --sport 67:68 -j ACCEPT
 $IPT -A INPUT -p udp --dport 67:68 --sport 67:68 -j ACCEPT
@@ -329,20 +363,32 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 587 -m state --state ESTABLISHED -j ACCEP
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 465 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 465 -m state --state ESTABLISHED -j ACCEPT
 
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######-----/// IPTABLES SECURITY
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+
 ######---------------------------
-echo -e "----------------------------------------\n  Prevent DoS attack \n----------------------------------------\n "
+echo -e "----------------------------------------\n  Iptables Scurity Rules \n----------------------------------------\n "
 $IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 5 -j ACCEPT
 $IPT -A INPUT -p tcp --syn -j DROP
 
 ######---------------------------
-echo -e "----------------------------------------\n  Logging and Dropping Unwanted Traffic \n----------------------------------------\n "
-$IPT -N LOGNDROP
-$IPT -A LOGNDROP -m limit --limit 5/min -j LOG --log-prefix "IPTABLES DROP: " --log-level 4
-$IPT -A LOGNDROP -j DROP
+#Force SYN packets check
+$IPT -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
 
-# Uncomment the following line to send all remaining unmatched traffic to logging
-# $IPT -A INPUT -j LOGNDROP
-# $IPT -A OUTPUT -j LOGNDROP
+######---------------------------
+#Packets with incoming fragments drop them. This attack result into Linux server panic such data loss.
+$IPT -A INPUT -f -j DROP
+
+######---------------------------
+#Incoming malformed XMAS packets drop them:
+$IPT -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+
+######---------------------------
+#Incoming malformed NULL packets:
+$IPT -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 
 ####################################################################################################
 #####-----/// BLOCK IPADDR SECTION
