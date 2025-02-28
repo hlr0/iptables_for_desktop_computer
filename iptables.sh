@@ -3,18 +3,17 @@ echo -e "######-----------------------------------------------------------------
 echo -e "######-------------------------------------------------------------------------------------------------------------"
 echo -e "######-------------------------------------------------------------------------------------------------------------"
 echo "
-██ ██████  ████████  █████  ██████  ██      ███████ ███████  
-██ ██   ██    ██    ██   ██ ██   ██ ██      ██      ██       
-██ ██████     ██    ███████ ██████  ██      █████   ███████  
-██ ██         ██    ██   ██ ██   ██ ██      ██           ██  
-██ ██         ██    ██   ██ ██████  ███████ ███████ ███████  
-                                                             
-                                                             
-███████ ██ ██████  ███████ ██     ██  █████  ██      ██      
-██      ██ ██   ██ ██      ██     ██ ██   ██ ██      ██      
-█████   ██ ██████  █████   ██  █  ██ ███████ ██      ██      
-██      ██ ██   ██ ██      ██ ███ ██ ██   ██ ██      ██      
-██      ██ ██   ██ ███████  ███ ███  ██   ██ ███████ ███████ 
+    dMP dMMMMb dMMMMMMP .aMMMb  dMMMMb  dMP     dMMMMMP .dMMMb  
+   amr dMP.dMP   dMP   dMP"dMP dMP"dMP dMP     dMP     dMP" VP  
+  dMP dMMMMP"   dMP   dMMMMMP dMMMMK" dMP     dMMMP    VMMMb    
+ dMP dMP       dMP   dMP dMP dMP.aMF dMP     dMP     dP .dMP    
+dMP dMP       dMP   dMP dMP dMMMMP" dMMMMMP dMMMMMP  VMMMP"     
+                                                                
+    dMMMMMP dMP dMMMMb  dMMMMMP dMP dMP dMP .aMMMb  dMP     dMP 
+   dMP     amr dMP.dMP dMP     dMP dMP dMP dMP"dMP dMP     dMP  
+  dMMMP   dMP dMMMMK" dMMMP   dMP dMP dMP dMMMMMP dMP     dMP   
+ dMP     dMP dMP"AMF dMP     dMP.dMP.dMP dMP dMP dMP     dMP    
+dMP     dMP dMP dMP dMMMMMP  VMMMPVMMP" dMP dMP dMMMMMP dMMMMMP 
 "    
 echo -e "######-----/// Basic Script to Setup Iptables rules for your Desktop (Everyday Box)"
 echo -e "######-------------------------------------------------------------------------------------------------------------"
