@@ -191,9 +191,9 @@ echo -e "----------------------------------------\n  Getting Server IP and Check
 if ip link show $NETIF >/dev/null 2>&1; then
     SERVER_IP="$(ip -4 addr show $NETIF | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
     echo -e "$NETIF exists with IP: $SERVER_IP"
+    printf "\n ${YED} ========/// OK: $NETIF exists with IP: $SERVER_IP... ${RES}" 
 else
-    echo -e "$NETIF does not exist"
-    echo -e "Please set up network card then try again."
+    printf "\n ${RED} ========/// WARNING: Please set up network card then try again... ${RES}" 
     exit 0
 fi
 echo -e "\n"
