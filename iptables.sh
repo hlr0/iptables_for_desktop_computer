@@ -3,17 +3,19 @@ echo -e "######-----------------------------------------------------------------
 echo -e "######-------------------------------------------------------------------------------------------------------------"
 echo -e "######-------------------------------------------------------------------------------------------------------------"
 echo "
-    dMP dMMMMb dMMMMMMP .aMMMb  dMMMMb  dMP     dMMMMMP .dMMMb  
-   amr dMP.dMP   dMP   dMP"dMP dMP"dMP dMP     dMP     dMP" VP  
-  dMP dMMMMP"   dMP   dMMMMMP dMMMMK" dMP     dMMMP    VMMMb    
- dMP dMP       dMP   dMP dMP dMP.aMF dMP     dMP     dP .dMP    
-dMP dMP       dMP   dMP dMP dMMMMP" dMMMMMP dMMMMMP  VMMMP"     
-                                                                
-    dMMMMMP dMP dMMMMb  dMMMMMP dMP dMP dMP .aMMMb  dMP     dMP 
-   dMP     amr dMP.dMP dMP     dMP dMP dMP dMP"dMP dMP     dMP  
-  dMMMP   dMP dMMMMK" dMMMP   dMP dMP dMP dMMMMMP dMP     dMP   
- dMP     dMP dMP"AMF dMP     dMP.dMP.dMP dMP dMP dMP     dMP    
-dMP     dMP dMP dMP dMMMMMP  VMMMPVMMP" dMP dMP dMMMMMP dMMMMMP 
+  _____            _    _                _____       _        _     _           
+ |  __ \          | |  | |              |_   _|     | |      | |   | |          
+ | |  | | ___  ___| | _| |_ ___  _ __     | |  _ __ | |_ __ _| |__ | | ___  ___ 
+ | |  | |/ _ \/ __| |/ / __/ _ \| '_ \    | | | '_ \| __/ _` | '_ \| |/ _ \/ __|
+ | |__| |  __/\__ \   <| || (_) | |_) |  _| |_| |_) | || (_| | |_) | |  __/\__ \
+ |_____/ \___||___/_|\_\\__\___/| .__/  |_____| .__/ \__\__,_|_.__/|_|\___||___/
+                                | |           | |                               
+  ______ _                      |_| _   _____ |_|   _                           
+ |  ____(_)                      | | | |  __ \     | |                          
+ | |__   _ _ __ _____      ____ _| | | | |__) |   _| | ___  ___                 
+ |  __| | | '__/ _ \ \ /\ / / _` | | | |  _  / | | | |/ _ \/ __|                
+ | |    | | | |  __/\ V  V / (_| | | | | | \ \ |_| | |  __/\__ \                
+ |_|    |_|_|  \___| \_/\_/ \__,_|_|_| |_|  \_\__,_|_|\___||___/                
 "    
 echo -e "######-----/// Basic Script to Setup Iptables rules for your Desktop (Everyday Box)"
 echo -e "######-------------------------------------------------------------------------------------------------------------"
