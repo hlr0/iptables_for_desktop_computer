@@ -372,7 +372,7 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 465 -m state --state ESTABLISHED -j ACCEP
 ######---------------------------------------------------------------------------------
 
 ######---------------------------
-echo -e "----------------------------------------\n  Iptables Security Rules \n----------------------------------------\n "
+echo -e "----------------------------------------\n  Establish Security Rules \n----------------------------------------\n "
 ######---------------------------
 #Limit DDOS Attacks
 $IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 5 -j ACCEPT
