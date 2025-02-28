@@ -29,6 +29,7 @@ echo -e "######-----------------------------------------------------------------
 #% DESCRIPTION
 #%    This is a Iptables Script for setup of Desktop Computer - Everyday
 #%    Ping, dns, dhcp, ssh, http, https, working and will set establish and new connection
+#%    Additional Security measures for xmas syn flood 
 #%    Adjust the script to add your own dns servers and network cards
 #%
 #% OPTIONS
@@ -59,6 +60,7 @@ echo -e "######-----------------------------------------------------------------
 #     2025/02/27 : Me : Added revert changes
 #     2025/02/27 : Me : Added help function
 #     2025/02/27 : Me : Added POP3/IMAP rules for email clients
+#     2025/02/28 : Me : Added Security Section to iptables rules
 #
 #================================================================
 #  LOGS LOCATION
