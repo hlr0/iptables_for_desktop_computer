@@ -372,6 +372,10 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 587 -m state --state ESTABLISHED -j ACCEP
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 465 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 465 -m state --state ESTABLISHED -j ACCEPT
 
+# SMTPS (port 2087) - Secure CPANEL WHM Systems
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 2087 -m state --state NEW,ESTABLISHED -j ACCEPT
+
+
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######-----/// IPTABLES SECURITY
