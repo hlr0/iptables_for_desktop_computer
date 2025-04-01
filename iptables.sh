@@ -375,6 +375,10 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 465 -m state --state ESTABLISHED -j ACCEP
 # SMTPS (port 2087) - Secure CPANEL WHM Systems
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 2087 -m state --state NEW,ESTABLISHED -j ACCEPT
 
+# NON-STANDARD PORT FOR WEBSERVERS
+$IPT -A OUTPUT-o $NETIF -p tcp --dport 8080 -j ACCEPT 
+$IPT -A OUTPUT-o $NETIF -p tcp --dport 8443 -j ACCEPT #non-privelege port for secure https
+$IPT -A OUTPUT-o $NETIF -p tcp --dport 8096 -j ACCEPT #8096 is jellyfin server
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
