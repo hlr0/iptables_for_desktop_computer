@@ -382,6 +382,10 @@ $IPT -A OUTPUT-o $NETIF -p tcp --dport 8080 -j ACCEPT
 $IPT -A OUTPUT-o $NETIF -p tcp --dport 8443 -j ACCEPT #non-privelege port for secure https
 $IPT -A OUTPUT-o $NETIF -p tcp --dport 8096 -j ACCEPT #8096 is jellyfin server
 
+# VNC (port 7952) - OPENNEBULA
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 7952 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 7952 -m state --state ESTABLISHED -j ACCEPT
+
 # DREMIO (port 9047) - DREMIO
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 9047 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 9047 -m state --state ESTABLISHED -j ACCEPT
