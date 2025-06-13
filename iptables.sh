@@ -430,10 +430,9 @@ $IPT -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 ######---------------------------------------------------------------------------------
 echo -e "----------------------------------------\n  Blocking specific IPADDRS \n----------------------------------------\n "
 #BLOCK_THESE_IPS="192.168.0.243"
-#for blockip in $BLOCK_THESE_IPS
-#   $IPT -A INPUT -s $blockip -j DROP
-#do
-
+#for blockip in $BLOCK_THESE_IPS; do
+#    $IPT -A INPUT -s $blockip -j DROP
+#done
 
 
 ####################################################################################################
