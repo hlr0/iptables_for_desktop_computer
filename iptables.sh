@@ -378,9 +378,9 @@ $IPT -A OUTPUT -o $NETIF -p tcp --dport 2083 -m state --state NEW,ESTABLISHED -j
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 2096 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 # NON-STANDARD PORT FOR WEBSERVERS
-$IPT -A OUTPUT-o $NETIF -p tcp --dport 8080 -j ACCEPT 
-$IPT -A OUTPUT-o $NETIF -p tcp --dport 8443 -j ACCEPT #non-privelege port for secure https
-$IPT -A OUTPUT-o $NETIF -p tcp --dport 8096 -j ACCEPT #8096 is jellyfin server
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 8080 -j ACCEPT 
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 8443 -j ACCEPT #non-privelege port for secure https
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 8096 -j ACCEPT #8096 is jellyfin server
 
 # VNC (port 7952) - OPENNEBULA
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 7952 -m state --state NEW,ESTABLISHED -j ACCEPT
@@ -390,6 +390,9 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 7952 -m state --state ESTABLISHED -j ACCE
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 9047 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 9047 -m state --state ESTABLISHED -j ACCEPT
 
+#NTP (Network Time Protocol)
+$IPT -A OUTPUT -p udp --dport 123 -j ACCEPT
+$IPT -A INPUT -p udp --sport 123 -j ACCEPT
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######-----/// IPTABLES SECURITY
