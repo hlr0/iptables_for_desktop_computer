@@ -391,8 +391,12 @@ $IPT -A OUTPUT -o $NETIF -p tcp --dport 9047 -m state --state NEW,ESTABLISHED -j
 $IPT -A INPUT -i $NETIF -p tcp --sport 9047 -m state --state ESTABLISHED -j ACCEPT
 
 #NTP (Network Time Protocol)
-$IPT -A OUTPUT -p udp --dport 123 -j ACCEPT
-$IPT -A INPUT -p udp --sport 123 -j ACCEPT
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 123 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 123 -m state --state ESTABLISHED -j ACCEPT
+
+#TOR RELAY NETWORK
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 9050 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 9050 -m state --state ESTABLISHED -j ACCEPT
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######-----/// IPTABLES SECURITY
