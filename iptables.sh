@@ -397,6 +397,61 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 123 -m state --state ESTABLISHED -j ACCEP
 #TOR RELAY NETWORK
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 9050 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 9050 -m state --state ESTABLISHED -j ACCEPT
+
+#WABUZO
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 2004 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 2004 -m state --state ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 2005 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 2005 -m state --state ESTABLISHED -j ACCEPT
+
+######---------------------------
+echo -e "----------------------------------------\n  Allow Basic Services Ports \n----------------------------------------\n "
+# FTP (port 21)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 21 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 21 -m state --state ESTABLISHED -j ACCEPT
+
+# SSH (port 22)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+
+# SMTP (port 25)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 25 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 25 -m state --state ESTABLISHED -j ACCEPT
+
+# DNS (port 53) - UDP
+$IPT -A OUTPUT -o $NETIF -p udp --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p udp --sport 53 -m state --state ESTABLISHED -j ACCEPT
+# DNS (port 53) - TCP
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 53 -m state --state ESTABLISHED -j ACCEPT
+
+# HTTP (port 80)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
+
+# HTTPS (port 443)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
+
+# IMAP (port 143)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 143 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 143 -m state --state ESTABLISHED -j ACCEPT
+
+# SMTPS (port 465)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 465 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 465 -m state --state ESTABLISHED -j ACCEPT
+
+# IMAPS (port 993)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 993 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 993 -m state --state ESTABLISHED -j ACCEPT
+
+# MySQL (port 3306)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p tcp --sport 3306 -m state --state ESTABLISHED -j ACCEPT
+
+
+
+
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######-----/// IPTABLES SECURITY
