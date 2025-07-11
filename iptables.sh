@@ -449,6 +449,11 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 993 -m state --state ESTABLISHED -j ACCEP
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 3306 -m state --state ESTABLISHED -j ACCEPT
 
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######-----/// IPTABLES VPN PORTS
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
 
 echo -e "----------------------------------------\n  Allow OPENVPN PORT \n----------------------------------------\n"
 # Allow outbound VPN connection (UDP 1194)
@@ -457,6 +462,11 @@ $IPT -A INPUT  -i $NETIF -p udp --sport 1194 -m state --state ESTABLISHED     -j
 # Allow fallback TCP/443 (if OpenVPN uses TCP mode or for TLS)
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT  -i $NETIF -p tcp --sport 443 -m state --state ESTABLISHED     -j ACCEPT
+
+echo -e "----------------------------------------\n  Allow CUSTOM FORTIGATE PORT \n----------------------------------------\n"
+# Allow fallback TCP/443 (if OpenVPN uses TCP mode or for TLS)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 10443 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT  -i $NETIF -p tcp --sport 10443 -m state --state ESTABLISHED     -j ACCEPT
 
 
 ######---------------------------------------------------------------------------------
