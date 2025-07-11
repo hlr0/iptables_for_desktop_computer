@@ -450,6 +450,13 @@ $IPT -A OUTPUT -o $NETIF -p tcp --dport 3306 -m state --state NEW,ESTABLISHED -j
 $IPT -A INPUT -i $NETIF -p tcp --sport 3306 -m state --state ESTABLISHED -j ACCEPT
 
 
+echo -e "----------------------------------------\n  Allow OPENVPN PORT \n----------------------------------------\n"
+# Allow outbound VPN connection (UDP 1194)
+$IPT -A OUTPUT -o $NETIF -p udp --dport 1194 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT  -i $NETIF -p udp --sport 1194 -m state --state ESTABLISHED     -j ACCEPT
+# Allow fallback TCP/443 (if OpenVPN uses TCP mode or for TLS)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT  -i $NETIF -p tcp --sport 443 -m state --state ESTABLISHED     -j ACCEPT
 
 
 ######---------------------------------------------------------------------------------
