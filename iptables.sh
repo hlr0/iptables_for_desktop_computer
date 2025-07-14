@@ -342,6 +342,11 @@ echo -e "----------------------------------------\n  Allow outgoing RDP Connecti
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 3389 -m state --state ESTABLISHED -j ACCEPT
 
+-------------------\n  Allow Proxmox PORT \n----------------------------------------\n"
+# Allow outbound Proxmox (TCP 8006)
+$IPT -A OUTPUT -o $NETIF -p tcp --dport 8006 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT  -i $NETIF -p tcp --sport 8006 -m state --state ESTABLISHED     -j ACCEPT
+
 ######---------------------------
 echo -e "----------------------------------------\n  Allow Email Client Protocols (POP3/IMAP) \n----------------------------------------\n "
 # POP3 (port 110)
