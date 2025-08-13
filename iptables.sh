@@ -28,6 +28,9 @@ printf "\n ${YED} ==============================================================
 printf "\n ${YED} ======================================================================================================================= ${RES}"
 printf "\n ${YED} ======================================================================================================================= \n ${RES}"
 
+##### SETTINGS OF THE SYSTEM
+# Setting the default iptables super bin file at the very top
+IPT="/sbin/iptables"
 # Default network interface
 NETIF="eth0"
 
@@ -63,16 +66,27 @@ clean_iptables() {
     printf "\n ${YED} ======================================================================================================================= ${RES}"
     printf "\n ${YED} ======================================================================================================================= ${RES}"
     printf "\n ${YED} =======================================================================================================================  \n ${RES}"
+
+    # Flush all rules
     $IPT -F
     $IPT -X
     $IPT -t nat -F
     $IPT -t nat -X
     $IPT -t mangle -F
     $IPT -t mangle -X
+    $IPT -t raw -F
+    $IPT -t raw -X
+    $IPT -t security -F
+    $IPT -t security -X
+    
+    # Set default policies
     $IPT -P INPUT ACCEPT
     $IPT -P OUTPUT ACCEPT
     $IPT -P FORWARD ACCEPT
-    $IPT -nvL
+    
+    # List current rules
+    $IPT -nvL 
+
     echo -e "\n------------------------------------------------- Finished Clean Slate Protocol-------------------------------------------------"
     exit 0
 }
