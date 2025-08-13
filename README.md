@@ -14,18 +14,30 @@ Examples:
 
 Note: This script must be run with root privileges
 
+##### setup procedure
+ ------------------------------------------------------------------------------------
+ apt-get install iptables-persistent
+ ------------------------------------------------------------------------------------
+ #if you want to load at reboot or make sure crontab -- is set or run with iptables-save or netfilter persistent
+ #every 30 minutes
+ */30 * * * * /sbin/iptables-restore < /etc/iptables/rules.v4 2>&1 | logger -t iptables-restore
+ */30 * * * * /usr/sbin/netfilter-persistent reload 2>&1 | logger -t netfilter-persistent
+ @reboot /sbin/iptables-restore < /etc/iptables/rules.v4 2>&1 | logger -t iptables-restore
+ @reboot /usr/sbin/netfilter-persistent reload 2>&1 | logger -t netfilter-persistent
+ ------------------------------------------------------------------------------------
 
 ################### BASIC USAGE 
-# Check if rules are loaded
+
+#### Check if rules are loaded
 iptables -L -n
 
-# Test ping blocking (should fail from untrusted IPs)
+#### Test ping blocking (should fail from untrusted IPs)
 ping 192.168.0.43
 
-# Check logs for any scan attempts
+#### Check logs for any scan attempts
 grep "IPTABLES SCAN ATTEMPT" /var/log/syslog
 
-# Save the rules permanently
+#### Save the rules permanently
 apt-get install iptables-persistent
-# or
+#### or
 iptables-save > /etc/iptables/rules.v4
