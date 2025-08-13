@@ -14,7 +14,8 @@ Examples:
 
 Note: This script must be run with root privileges
 
-##### setup procedure
+##### setup procedure #####
+
  ------------------------------------------------------------------------------------
  apt-get install iptables-persistent
  ------------------------------------------------------------------------------------
