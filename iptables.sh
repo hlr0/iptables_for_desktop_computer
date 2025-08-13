@@ -20,6 +20,17 @@ YEL=$(echo -e "\e[1;33m") # Yellow Light
 # BANNER
 #================================================================
 printf "\n ${YED} ======================================================================================================================= ${RES}"
+printf "\n ${YED} =======================================================================================================================  \n ${RES}"
+
+# Display trusted IPs summary
+printf "\n ${GRL} ========/// SECURITY SUMMARY ${RES}\n"
+printf " ${CYL} Trusted IPs allowed to ping: ${TRUSTED_PING_IPS[*]} ${RES}\n"
+printf " ${CYL} ICMP ping requests blocked except from trusted IPs ${RES}\n"
+printf " ${CYL} Anti-Nmap scanning rules active ${RES}\n"
+printf " ${CYL} Suspicious activity logging to /var/log/syslog ${RES}\n"
+printf "\n ${GRL} ========/// To add more trusted IPs, edit TRUSTED_PING_IPS array at top of script ${RES}\n"
+
+exit 0
 printf "\n ${YED} ======================================================================================================================= ${RES}"
 printf "\n ${YED} ======================================================================================================================= ${RES}"
 printf "\n ${RED} ========/// DESKTOP IPTABLES FIREWALL RULES ${RES}"   
@@ -33,6 +44,9 @@ printf "\n ${YED} ==============================================================
 IPT="/sbin/iptables"
 # Default network interface
 NETIF="eth0"
+
+# Trusted IPs that can ping this machine (array for easy expansion)
+TRUSTED_PING_IPS=("192.168.1.100")
 
 #================================================================
 # FUNCTIONS
@@ -196,7 +210,7 @@ $IPT -P FORWARD DROP
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
-######-----/// IPTABLES LOOPBACK AND PING
+######-----/// IPTABLES LOOPBACK
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 
@@ -205,14 +219,78 @@ echo -e "----------------------------------------\n  Allow traffic on loopback \
 $IPT -A OUTPUT -o lo -j ACCEPT
 $IPT -A INPUT -i lo -j ACCEPT
 
-######---------------------------
-echo -e "----------------------------------------\n  Ping ICMP from inside to outside \n----------------------------------------\n "
-$IPT -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
-$IPT -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######-----/// SECURITY RULES SECTION
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
 
-echo -e "----------------------------------------\n  Ping ICMP from outside to inside \n----------------------------------------\n "
-$IPT -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
-$IPT -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+######---------------------------
+echo -e "----------------------------------------\n  Security Rules - Anti-Scanning Protection \n----------------------------------------\n "
+
+# Create a logging chain for suspicious activity
+$IPT -N SCAN_ATTEMPTS
+$IPT -A SCAN_ATTEMPTS -m limit --limit 5/min -j LOG --log-prefix "IPTABLES SCAN ATTEMPT: " --log-level 4
+$IPT -A SCAN_ATTEMPTS -j DROP
+
+# Block NULL packets (used in Nmap NULL scan)
+$IPT -A INPUT -p tcp --tcp-flags ALL NONE -j SCAN_ATTEMPTS
+
+# Block XMAS packets (used in Nmap XMAS scan)
+$IPT -A INPUT -p tcp --tcp-flags ALL ALL -j SCAN_ATTEMPTS
+
+# Block FIN packets (used in Nmap FIN scan)
+$IPT -A INPUT -p tcp --tcp-flags ALL FIN -j SCAN_ATTEMPTS
+
+# Block SYN-FIN packets (another scanning technique)
+$IPT -A INPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j SCAN_ATTEMPTS
+
+# Limit new connections to prevent scanning
+$IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT
+$IPT -A INPUT -p tcp --syn -j DROP
+
+# Force SYN packets check
+$IPT -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+
+# Packets with incoming fragments drop them
+$IPT -A INPUT -f -j DROP
+
+# Limit DDOS Attacks
+$IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 5 -j ACCEPT
+$IPT -A INPUT -p tcp --syn -j DROP
+
+######---------------------------
+echo -e "----------------------------------------\n  Granular ICMP Control Rules \n----------------------------------------\n "
+
+# Allow exceptions for trusted IPs to ping this machine
+for trusted_ip in "${TRUSTED_PING_IPS[@]}"; do
+    echo "Allowing ping from trusted IP: $trusted_ip"
+    $IPT -A INPUT -p icmp --icmp-type echo-request -s $trusted_ip -j ACCEPT
+done
+
+# Allow essential ICMP types (required for proper network operation)
+$IPT -A INPUT  -p icmp --icmp-type destination-unreachable -j ACCEPT   # Needed for Path MTU discovery
+$IPT -A OUTPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
+
+$IPT -A INPUT  -p icmp --icmp-type time-exceeded -j ACCEPT             # Needed for Traceroute
+$IPT -A OUTPUT -p icmp --icmp-type time-exceeded -j ACCEPT
+
+$IPT -A INPUT  -p icmp --icmp-type parameter-problem -j ACCEPT         # Needed for packet error reporting
+$IPT -A OUTPUT -p icmp --icmp-type parameter-problem -j ACCEPT
+
+# Explicitly block echo requests (ping) but allow replies
+$IPT -A INPUT  -p icmp --icmp-type echo-request -j SCAN_ATTEMPTS       # Block incoming pings and log
+$IPT -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT                # Allow ping replies if we initiate
+
+# Allow outgoing ping if needed (uncomment if you want to ping others)
+$IPT -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+# Rate limit remaining ICMP to prevent flooding
+$IPT -A INPUT -p icmp -m limit --limit 1/sec --limit-burst 5 -j ACCEPT
+$IPT -A INPUT -p icmp -j DROP
+
+# Block all other ICMP types not explicitly allowed
+$IPT -A OUTPUT -p icmp -j DROP
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -240,7 +318,6 @@ $IPT -A INPUT -p tcp -i $NETIF --sport 53 -m state --state ESTABLISHED -j ACCEPT
 echo -e "----------------------------------------\n  Allow Established Related Connections \n----------------------------------------\n "
 $IPT -A OUTPUT -o $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 $IPT -A INPUT -i $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -452,37 +529,6 @@ echo -e "----------------------------------------\n  Allow CUSTOM FORTIGATE PORT
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 10443 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT  -i $NETIF -p tcp --sport 10443 -m state --state ESTABLISHED -j ACCEPT
 
-
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######-----/// IPTABLES SECURITY
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-
-######---------------------------
-echo -e "----------------------------------------\n  Establish Security Rules \n----------------------------------------\n "
-######---------------------------
-#Limit DDOS Attacks
-$IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 5 -j ACCEPT
-$IPT -A INPUT -p tcp --syn -j DROP
-
-######---------------------------
-#Force SYN packets check
-$IPT -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
-
-######---------------------------
-#Packets with incoming fragments drop them. This attack result into Linux server panic such data loss.
-$IPT -A INPUT -f -j DROP
-
-######---------------------------
-#Incoming malformed XMAS packets drop them:
-$IPT -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
-
-######---------------------------
-#Incoming malformed NULL packets:
-$IPT -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
-
-
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######-----/// IPTABLES BLOCK IPADDR SECTION
@@ -493,7 +539,6 @@ echo -e "----------------------------------------\n  Blocking specific IPADDRS \
 #for blockip in $BLOCK_THESE_IPS; do
 #    $IPT -A INPUT -s $blockip -j DROP
 #done
-
 
 ####################################################################################################
 ####################################################################################################
@@ -521,6 +566,4 @@ printf "\n ${YED} systemctl enable netfilter-persistent  # Ensures it loads at b
 printf "\n ${YED} systemctl start netfilter-persistent  # Loads it now ${RES}"
 printf "\n ========/// ------------------------------------------------------------------------------------"
 printf "\n ${YED} ======================================================================================================================= ${RES}"
-printf "\n ${YED} ======================================================================================================================= ${RES}"
-printf "\n ${YED} =======================================================================================================================  \n ${RES}"
-exit 0
+printf "\n
