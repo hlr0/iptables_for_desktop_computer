@@ -27,121 +27,33 @@ printf "\n ${BLD} ========/// Basic Script to Setup Iptables rules for your Desk
 printf "\n ${YED} ======================================================================================================================= ${RES}"
 printf "\n ${YED} ======================================================================================================================= ${RES}"
 printf "\n ${YED} ======================================================================================================================= \n ${RES}"
-#================================================================
-# HEADER
-#================================================================
-#% SYNOPSIS
-#+    ${iptables.sh}
-#%
-#% DESCRIPTION
-#%    This is a Iptables Script for setup of Desktop Computer - Everyday
-#%    Ping, dns, dhcp, ssh, http, https, working and will set establish and new connection
-#%    Additional Security measures for xmas syn flood 
-#%    Adjust the script to add your own dns servers and network cards
-#%
-#% OPTIONS
-#%    -h, --help                    Display this help message
-#%    -c, --clean                   Will Revert all changes and flush
-#%                                  the iptables rules, chains, tables allowing
-#%                                  to start from a clean slate or to
-#%                                  revert any changes made to the system
-#%
-#% EXAMPLES
-#%    ${iptables.sh} [--help|--clean]
-#%
-#================================================================
-#- IMPLEMENTATION
-#-    version         ${iptables.sh} 0.0.6
-#-    author          Some Dude that thinks iptables is cool
-#-    copyright       Copyright (c) Free For All
-#-    license         GNU General Public License
-#-    script_id       12345
-#-
-#================================================================
-#  HISTORY
-#     2025/02/25 : Me : Script creation
-#     2025/02/26 : Me : Added kernel hardening 
-#     2025/02/27 : Me : Added header and settings
-#     2025/02/27 : Me : Added various iptables rules 
-#     2025/02/27 : Me : Added block ipaddr iptables rules 
-#     2025/02/27 : Me : Added revert changes
-#     2025/02/27 : Me : Added help function
-#     2025/02/27 : Me : Added POP3/IMAP rules for email clients
-#     2025/02/28 : Me : Added Security Section to iptables rules
-#
-#================================================================
-#  LOGS LOCATION
-#    LOGS IPTABLES: Ubuntu / Kali / Debian:  grep "IPTABLES DROP:" /var/log/syslog
-#    LOGS IPTABLES: Centos / AlmaLinux / RedHat:  grep "IPTABLES DROP:" /var/log/messages
-#
-#================================================================
-#  DEBUG OPTION
-#    set -n  # Uncomment to check your syntax, without execution.
-#    set -x  # Uncomment to debug this shell script
-#
-#================================================================
-#- OS SAVE OR RESTORE RULES
-#- Use these commands to save or restore iptables rules before reboot.
-#- You can specify IPv4 or IPv6 rules as needed.
-#- 
-#- 
-#- RED HAT:
-#- Save:    iptables-save > /etc/sysconfig/iptables
-#- Restore: iptables-restore < /etc/sysconfig/iptables
-#- 
-#-
-#-UBUNTU (24.04) OR KALI (2024.3):
-#- Save:    
-#- iptables-save > /etc/iptables/rules.v4
-#- ip6tables-save > /etc/iptables/rules.v6
-#-
-#- Restore: 
-#- iptables-restore < /etc/iptables/rules.v4
-#- ip6tables-restore < /etc/iptables/rules.v6
-#-
-#================================================================
-# END_OF_HEADER
-#================================================================
-####################################################################################################
-####################################################################################################
-#####-----/// START IPTABLES SCRIPT
-####################################################################################################
-####################################################################################################
-#Setting the default iptables super bin file
-IPT="/sbin/iptables"
 
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######-----/// FUNCTIONS
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
+# Default network interface
+NETIF="eth0"
 
-######---------------------------
-# Help function
+#================================================================
+# FUNCTIONS
+#================================================================
+
 show_help() {
     echo "Iptables Script for Desktop Computer Setup"
     echo ""
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  -h, --help     Show this help message and exit"
-    echo "  -c, --clean    Revert all changes and flush the iptables rules,"
-    echo "                 chains, and tables allowing to start from a clean"
-    echo "                 slate or to revert any changes made to the system"
+    echo "  -h, --help      Show this help message and exit"
+    echo "  -c, --clean     Revert all changes and flush the iptables rules"
+    echo "  -n, --network   Specify network interface (e.g., eth0, wlan0)"
     echo ""
     echo "Examples:"
-    echo "  $0             Run the script with default firewall rules"
-    echo "  $0 --clean     Flush all iptables rules and set default policies to ACCEPT"
-    echo "  $0 --help      Display this help message"
+    echo "  $0 -n eth0      Run with eth0 as network interface"
+    echo "  $0 --clean      Flush all iptables rules"
+    echo "  $0 --help       Display this help message"
     echo ""
     echo "Note: This script must be run with root privileges"
     exit 0
 }
 
-######---------------------------
-# Clean function
 clean_iptables() {
     echo -e "\n\n"
     printf "\n ${YED} ======================================================================================================================= ${RES}"
@@ -161,42 +73,54 @@ clean_iptables() {
     exit 0
 }
 
-######---------------------------
-# Parse command line arguments
-case "$1" in
-    --help|-h)
-        show_help
-        ;;
-    --clean|-c)
-        clean_iptables
-        ;;
-esac
+#================================================================
+# PARSE COMMAND LINE ARGUMENTS
+#================================================================
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            ;;
+        -c|--clean)
+            clean_iptables
+            ;;
+        -n|--network)
+            NETIF="$2"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            ;;
+    esac
+    shift
+done
 
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######-----/// SETTINGS
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-######---------------------------------------------------------------------------------
-echo -e "----------------------------------------\n  Setting Network Cards \n----------------------------------------\n "
-NETIF="eth0"  # Update to use your first network card
+#================================================================
+# MAIN SCRIPT
+#================================================================
+IPT="/sbin/iptables"
 
-######---------------------------
+echo -e "----------------------------------------\n  Using Network Interface: $NETIF \n----------------------------------------\n "
+
+# Check if network interface exists
+if ! ip link show $NETIF >/dev/null 2>&1; then
+    printf "\n ${RED} ========/// ERROR: Network interface $NETIF does not exist! ${RES}"
+    printf "\n ${YED} ========/// Available interfaces: ${RES}"
+    ip link show | awk -F: '$0 !~ "lo|vir|^[^0-9]"{print $2;getline}'
+    exit 1
+fi
+
 echo -e "----------------------------------------\n  Setting your DNS servers \n----------------------------------------\n "
 DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
 
-######---------------------------
-echo -e "----------------------------------------\n  Getting Server IP and Check Network Cards \n----------------------------------------\n "
-if ip link show $NETIF >/dev/null 2>&1; then
-    SERVER_IP="$(ip -4 addr show $NETIF | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
-    echo -e "$NETIF exists with IP: $SERVER_IP"
-    printf "\n ${YED} ========/// OK: $NETIF exists with IP: $SERVER_IP... ${RES}" 
-else
-    printf "\n ${RED} ========/// WARNING: Please set up network card then try again... ${RES}" 
-    exit 0
-fi
-echo -e "\n"
+echo -e "----------------------------------------\n  Getting Server IP \n----------------------------------------\n "
+SERVER_IP="$(ip -4 addr show $NETIF | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
+echo -e "$NETIF exists with IP: $SERVER_IP"
+printf "\n ${YED} ========/// OK: $NETIF exists with IP: $SERVER_IP... ${RES}\n"
+
+# Rest of the script remains the same, just using $NETIF variable
+# [Previous script content continues from here...]
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -337,15 +261,22 @@ $IPT -A INPUT -p tcp -i $NETIF --sport 80 -m state --state ESTABLISHED -j ACCEPT
 $IPT -A OUTPUT -p tcp -o $NETIF --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -p tcp -i $NETIF --sport 443 -m state --state ESTABLISHED -j ACCEPT
 
+# Allow HTTP/HTTPS to any destination (not just specific ports)
+$IPT -A OUTPUT -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
+
 ######---------------------------
 echo -e "----------------------------------------\n  Allow outgoing RDP Connections \n----------------------------------------\n "
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 3389 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -i $NETIF -p tcp --sport 3389 -m state --state ESTABLISHED -j ACCEPT
 
--------------------\n  Allow Proxmox PORT \n----------------------------------------\n"
+######---------------------------
+echo -e "----------------------------------------\n  Allow Proxmox PORT \n----------------------------------------\n"
 # Allow outbound Proxmox (TCP 8006)
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 8006 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT  -i $NETIF -p tcp --sport 8006 -m state --state ESTABLISHED     -j ACCEPT
+$IPT -A INPUT  -i $NETIF -p tcp --sport 8006 -m state --state ESTABLISHED -j ACCEPT
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow Email Client Protocols (POP3/IMAP) \n----------------------------------------\n "
@@ -396,8 +327,8 @@ $IPT -A OUTPUT -o $NETIF -p tcp --dport 9047 -m state --state NEW,ESTABLISHED -j
 $IPT -A INPUT -i $NETIF -p tcp --sport 9047 -m state --state ESTABLISHED -j ACCEPT
 
 #NTP (Network Time Protocol)
-$IPT -A OUTPUT -o $NETIF -p tcp --dport 123 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT -i $NETIF -p tcp --sport 123 -m state --state ESTABLISHED -j ACCEPT
+$IPT -A OUTPUT -o $NETIF -p udp --dport 123 -m state --state NEW,ESTABLISHED -j ACCEPT
+$IPT -A INPUT -i $NETIF -p udp --sport 123 -m state --state ESTABLISHED -j ACCEPT
 
 #TOR RELAY NETWORK
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 9050 -m state --state NEW,ESTABLISHED -j ACCEPT
@@ -463,15 +394,15 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 3306 -m state --state ESTABLISHED -j ACCE
 echo -e "----------------------------------------\n  Allow OPENVPN PORT \n----------------------------------------\n"
 # Allow outbound VPN connection (UDP 1194)
 $IPT -A OUTPUT -o $NETIF -p udp --dport 1194 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT  -i $NETIF -p udp --sport 1194 -m state --state ESTABLISHED     -j ACCEPT
+$IPT -A INPUT  -i $NETIF -p udp --sport 1194 -m state --state ESTABLISHED -j ACCEPT
 # Allow fallback TCP/443 (if OpenVPN uses TCP mode or for TLS)
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT  -i $NETIF -p tcp --sport 443 -m state --state ESTABLISHED     -j ACCEPT
+$IPT -A INPUT  -i $NETIF -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
 
 echo -e "----------------------------------------\n  Allow CUSTOM FORTIGATE PORT \n----------------------------------------\n"
 # Allow fallback TCP/443 (if OpenVPN uses TCP mode or for TLS)
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 10443 -m state --state NEW,ESTABLISHED -j ACCEPT
-$IPT -A INPUT  -i $NETIF -p tcp --sport 10443 -m state --state ESTABLISHED     -j ACCEPT
+$IPT -A INPUT  -i $NETIF -p tcp --sport 10443 -m state --state ESTABLISHED -j ACCEPT
 
 
 ######---------------------------------------------------------------------------------
