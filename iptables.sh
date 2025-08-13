@@ -43,10 +43,10 @@ show_help() {
     echo "Options:"
     echo "  -h, --help      Show this help message and exit"
     echo "  -c, --clean     Revert all changes and flush the iptables rules"
-    echo "  -n, --network   Specify network interface (e.g., eth0, wlan0)"
+    echo "  -n, --network   Specify network interface (e.g., eth0, eno2, wlan0)"
     echo ""
     echo "Examples:"
-    echo "  $0 -n eth0      Run with eth0 as network interface"
+    echo "  $0 -n eno2      Run with eno2 as network interface"
     echo "  $0 --clean      Flush all iptables rules"
     echo "  $0 --help       Display this help message"
     echo ""
@@ -65,6 +65,10 @@ clean_iptables() {
     printf "\n ${YED} =======================================================================================================================  \n ${RES}"
     $IPT -F
     $IPT -X
+    $IPT -t nat -F
+    $IPT -t nat -X
+    $IPT -t mangle -F
+    $IPT -t mangle -X
     $IPT -P INPUT ACCEPT
     $IPT -P OUTPUT ACCEPT
     $IPT -P FORWARD ACCEPT
@@ -111,6 +115,13 @@ if ! ip link show $NETIF >/dev/null 2>&1; then
     exit 1
 fi
 
+# Get Docker bridge interface (docker0)
+DOCKER_IF="docker0"
+if ! ip link show $DOCKER_IF >/dev/null 2>&1; then
+    printf "\n ${YED} ========/// NOTE: Docker bridge interface not found, skipping Docker rules ${RES}\n"
+    DOCKER_IF=""
+fi
+
 echo -e "----------------------------------------\n  Setting your DNS servers \n----------------------------------------\n "
 DNS_SERVER="9.9.9.9 8.8.8.8 1.1.1.1"
 
@@ -119,14 +130,9 @@ SERVER_IP="$(ip -4 addr show $NETIF | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"
 echo -e "$NETIF exists with IP: $SERVER_IP"
 printf "\n ${YED} ========/// OK: $NETIF exists with IP: $SERVER_IP... ${RES}\n"
 
-# Rest of the script remains the same, just using $NETIF variable
-# [Previous script content continues from here...]
-
-######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######-----/// KERNEL HARDENING
-######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 #Setting up default kernel tunings here (don't worry too much about these right now, they are acceptable defaults) 
@@ -146,11 +152,12 @@ echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 ##Log impossible (martian) packets
 echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 
-######---------------------------------------------------------------------------------
+# Enable IP forwarding for Docker
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######-----/// START IPTABLES RULES
-######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
 
@@ -222,6 +229,35 @@ echo -e "----------------------------------------\n  Allow Established Related C
 $IPT -A OUTPUT -o $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 $IPT -A INPUT -i $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
+
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+######-----/// DOCKER NETWORKING RULES
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+if [ -n "$DOCKER_IF" ]; then
+    echo -e "----------------------------------------\n  Setting up Docker Networking Rules \n----------------------------------------\n "
+    
+    # Allow Docker containers to communicate with host
+    $IPT -A INPUT -i $DOCKER_IF -j ACCEPT
+    $IPT -A OUTPUT -o $DOCKER_IF -j ACCEPT
+    
+    # Allow Docker containers to communicate with external world
+    $IPT -A FORWARD -i $DOCKER_IF -o $NETIF -j ACCEPT
+    $IPT -A FORWARD -i $NETIF -o $DOCKER_IF -j ACCEPT
+    
+    # Allow established/related connections
+    $IPT -A FORWARD -i $DOCKER_IF -o $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    $IPT -A FORWARD -i $NETIF -o $DOCKER_IF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    
+    # NAT for Docker containers
+    $IPT -t nat -A POSTROUTING -o $NETIF -j MASQUERADE
+    
+    # Allow Docker containers to communicate with each other
+    $IPT -A FORWARD -i $DOCKER_IF -o $DOCKER_IF -j ACCEPT
+    
+    printf "\n ${GRD} ========/// Docker networking rules configured for interface $DOCKER_IF ${RES}\n"
+fi
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
