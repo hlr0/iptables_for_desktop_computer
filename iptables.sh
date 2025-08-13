@@ -554,4 +554,4 @@ printf "\n ${YED} systemctl enable netfilter-persistent  # Ensures it loads at b
 printf "\n ${YED} systemctl start netfilter-persistent  # Loads it now ${RES}"
 printf "\n ========/// ------------------------------------------------------------------------------------"
 printf "\n ${YED} ======================================================================================================================= ${RES}"
-printf "\n
+printf "\n"
