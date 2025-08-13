@@ -553,5 +553,7 @@ printf "\n ${YED} grep -E 'iptables|netfilter' /var/log/syslog  # Check for erro
 printf "\n ${YED} systemctl enable netfilter-persistent  # Ensures it loads at boot ${RES}"
 printf "\n ${YED} systemctl start netfilter-persistent  # Loads it now ${RES}"
 printf "\n ========/// ------------------------------------------------------------------------------------"
+printf "\n ${YED} Check logs for any scan attempts -- grep 'IPTABLES SCAN ATTEMPT' /var/log/syslog ${RES}"
+printf "\n ========/// ------------------------------------------------------------------------------------"
 printf "\n ${YED} ======================================================================================================================= ${RES}"
 printf "\n"
