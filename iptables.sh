@@ -20,18 +20,6 @@ YEL=$(echo -e "\e[1;33m") # Yellow Light
 # BANNER
 #================================================================
 printf "\n ${YED} ======================================================================================================================= ${RES}"
-printf "\n ${YED} =======================================================================================================================  \n ${RES}"
-
-# Display trusted IPs summary
-printf "\n ${GRL} ========/// SECURITY SUMMARY ${RES}\n"
-printf " ${CYL} Trusted IPs allowed to ping: ${TRUSTED_PING_IPS[*]} ${RES}\n"
-printf " ${CYL} ICMP ping requests blocked except from trusted IPs ${RES}\n"
-printf " ${CYL} Anti-Nmap scanning rules active ${RES}\n"
-printf " ${CYL} Suspicious activity logging to /var/log/syslog ${RES}\n"
-printf "\n ${GRL} ========/// To add more trusted IPs, edit TRUSTED_PING_IPS array at top of script ${RES}\n"
-
-exit 0
-printf "\n ${YED} ======================================================================================================================= ${RES}"
 printf "\n ${YED} ======================================================================================================================= ${RES}"
 printf "\n ${RED} ========/// DESKTOP IPTABLES FIREWALL RULES ${RES}"   
 printf "\n ${BLD} ========/// Basic Script to Setup Iptables rules for your Desktop (Everyday Box) ${RES}"   
@@ -47,6 +35,15 @@ NETIF="eth0"
 
 # Trusted IPs that can ping this machine (array for easy expansion)
 TRUSTED_PING_IPS=("192.168.1.100")
+
+# Display trusted IPs summary
+printf "\n ${GRL} ========/// SECURITY SUMMARY ${RES}\n"
+printf " ${CYL} Trusted IPs allowed to ping: ${TRUSTED_PING_IPS[*]} ${RES}\n"
+printf " ${CYL} ICMP ping requests blocked except from trusted IPs ${RES}\n"
+printf " ${CYL} Anti-Nmap scanning rules active ${RES}\n"
+printf " ${CYL} Suspicious activity logging to /var/log/syslog ${RES}\n"
+printf "\n ${GRL} ========/// To add more trusted IPs, edit TRUSTED_PING_IPS array at top of script ${RES}\n"
+
 
 #================================================================
 # FUNCTIONS
