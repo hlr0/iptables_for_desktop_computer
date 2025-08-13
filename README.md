@@ -13,3 +13,19 @@ Examples:
   $0 --help       Display this help message
 
 Note: This script must be run with root privileges
+
+
+################### BASIC USAGE 
+# Check if rules are loaded
+iptables -L -n
+
+# Test ping blocking (should fail from untrusted IPs)
+ping 192.168.0.43
+
+# Check logs for any scan attempts
+grep "IPTABLES SCAN ATTEMPT" /var/log/syslog
+
+# Save the rules permanently
+apt-get install iptables-persistent
+# or
+iptables-save > /etc/iptables/rules.v4
