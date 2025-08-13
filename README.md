@@ -18,8 +18,8 @@ Note: This script must be run with root privileges
  ------------------------------------------------------------------------------------
  apt-get install iptables-persistent
  ------------------------------------------------------------------------------------
- #if you want to load at reboot or make sure crontab -- is set or run with iptables-save or netfilter persistent
- #every 30 minutes
+ if you want to load at reboot or make sure crontab -- is set or run with iptables-save or netfilter persistent
+ ####### every 30 minutes
  */30 * * * * /sbin/iptables-restore < /etc/iptables/rules.v4 2>&1 | logger -t iptables-restore
  */30 * * * * /usr/sbin/netfilter-persistent reload 2>&1 | logger -t netfilter-persistent
  @reboot /sbin/iptables-restore < /etc/iptables/rules.v4 2>&1 | logger -t iptables-restore
