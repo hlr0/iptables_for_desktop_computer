@@ -209,6 +209,18 @@ $IPT -A INPUT -i lo -j ACCEPT
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
+######-----/// ALLOW ESTABLISHED/RELATED FIRST (CRITICAL)
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
+
+######---------------------------
+echo -e "----------------------------------------\n  Allow Established Related Connections (EARLY) \n----------------------------------------\n "
+# THIS MUST BE EARLY IN THE CHAIN - allows return traffic for all outbound connections
+$IPT -A INPUT -i $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+$IPT -A OUTPUT -o $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+######---------------------------------------------------------------------------------
+######---------------------------------------------------------------------------------
 ######-----/// SECURITY RULES SECTION
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -233,19 +245,15 @@ $IPT -A INPUT -p tcp --tcp-flags ALL FIN -j SCAN_ATTEMPTS
 # Block SYN-FIN packets (another scanning technique)
 $IPT -A INPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j SCAN_ATTEMPTS
 
-# Limit new connections to prevent scanning
+# FIXED: Only limit INCOMING new connections, not OUTGOING
 $IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT
 $IPT -A INPUT -p tcp --syn -j DROP
 
-# Force SYN packets check
+# Force SYN packets check - ONLY for INPUT chain
 $IPT -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
 
 # Packets with incoming fragments drop them
 $IPT -A INPUT -f -j DROP
-
-# Limit DDOS Attacks
-$IPT -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 5 -j ACCEPT
-$IPT -A INPUT -p tcp --syn -j DROP
 
 ######---------------------------
 echo -e "----------------------------------------\n  Granular ICMP Control Rules \n----------------------------------------\n "
@@ -270,15 +278,15 @@ $IPT -A OUTPUT -p icmp --icmp-type parameter-problem -j ACCEPT
 $IPT -A INPUT  -p icmp --icmp-type echo-request -j SCAN_ATTEMPTS       # Block incoming pings and log
 $IPT -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT                # Allow ping replies if we initiate
 
-# Allow outgoing ping if needed (uncomment if you want to ping others)
+# Allow outgoing ping if needed
 $IPT -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
 
 # Rate limit remaining ICMP to prevent flooding
 $IPT -A INPUT -p icmp -m limit --limit 1/sec --limit-burst 5 -j ACCEPT
 $IPT -A INPUT -p icmp -j DROP
 
-# Block all other ICMP types not explicitly allowed
-$IPT -A OUTPUT -p icmp -j DROP
+# REMOVED: Block all other ICMP types not explicitly allowed from OUTPUT
+# This was blocking legitimate ICMP needed for network operations
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -301,11 +309,6 @@ $IPT -A OUTPUT -p udp -o $NETIF --dport 53 -m state --state NEW,ESTABLISHED -j A
 $IPT -A INPUT -p udp -i $NETIF --sport 53 -m state --state ESTABLISHED -j ACCEPT
 $IPT -A OUTPUT -p tcp -o $NETIF --dport 53 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT -p tcp -i $NETIF --sport 53 -m state --state ESTABLISHED -j ACCEPT
-
-######---------------------------
-echo -e "----------------------------------------\n  Allow Established Related Connections \n----------------------------------------\n "
-$IPT -A OUTPUT -o $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-$IPT -A INPUT -i $NETIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ######---------------------------------------------------------------------------------
 ######---------------------------------------------------------------------------------
@@ -387,7 +390,7 @@ $IPT -A INPUT -i $NETIF -p tcp --sport 3389 -m state --state ESTABLISHED -j ACCE
 
 ######---------------------------
 echo -e "----------------------------------------\n  Allow Proxmox PORT \n----------------------------------------\n"
-# Allow outbound Proxmox (TCP 8006)
+# FIXED: Allow outbound Proxmox (TCP 8006) with proper return traffic
 $IPT -A OUTPUT -o $NETIF -p tcp --dport 8006 -m state --state NEW,ESTABLISHED -j ACCEPT
 $IPT -A INPUT  -i $NETIF -p tcp --sport 8006 -m state --state ESTABLISHED -j ACCEPT
 
@@ -553,7 +556,4 @@ printf "\n ${YED} grep -E 'iptables|netfilter' /var/log/syslog  # Check for erro
 printf "\n ${YED} systemctl enable netfilter-persistent  # Ensures it loads at boot ${RES}"
 printf "\n ${YED} systemctl start netfilter-persistent  # Loads it now ${RES}"
 printf "\n ========/// ------------------------------------------------------------------------------------"
-printf "\n ${YED} Check logs for any scan attempts -- grep 'IPTABLES SCAN ATTEMPT' /var/log/syslog ${RES}"
-printf "\n ========/// ------------------------------------------------------------------------------------"
 printf "\n ${YED} ======================================================================================================================= ${RES}"
-printf "\n"
